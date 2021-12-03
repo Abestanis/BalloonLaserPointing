@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <Stepper.h>
+#include "imu.h"
+
 
 /** The number of individual steps that make up a full revolution of the stepper motor. */
 #define MOTOR_STEPS_PER_REVOLUTION 2048
@@ -17,19 +19,31 @@
 /** The motor that is used to turn the base plate of the laser. */
 static Stepper baseMotor(MOTOR_STEPS_PER_REVOLUTION, 8, 10, 9, 11);
 
+/** The time in milliseconds since boot when the gyroscope was last read. */
+static unsigned long lastMeasurementMillis = 0;
+
 void setup() {
-    // Set the motor speed
+    // Initialize the serial port.
+    Serial.begin(9600);
+    Serial.println("Boot");
+    // Set the motor speed.
     baseMotor.setSpeed(
             (60L * 1000L * 1000L / MOTOR_STEPS_PER_REVOLUTION) / MOTOR_UPDATE_PERIOD_MICRO_S);
-    // Initialize the serial port
-    Serial.begin(9600);
+    initImu();
+    Serial.println("Boot complete");
+    lastMeasurementMillis = millis();
 }
 
 
 void loop() {
-    // Currently, just turn the motor one revolution and back, with 1 second sleeps in between.
-    baseMotor.step(MOTOR_STEPS_PER_REVOLUTION);
-    delay(1000);
-    baseMotor.step(-MOTOR_STEPS_PER_REVOLUTION);
-    delay(1000);
+    // Measure the rotation.
+    Vec3D rotations;
+    getIMUGyro(rotations);
+    unsigned long currentTime = millis();
+    lastMeasurementMillis = currentTime;
+    
+    // Calculate the angular change since the last iteration.
+    double angleChange = rotations.z * ((currentTime - lastMeasurementMillis) / 1000.0);
+    // Move the motor to compensate for the rotation.
+    baseMotor.step(lround(MOTOR_STEPS_PER_REVOLUTION / 360.0 * angleChange));
 }
