@@ -40,10 +40,10 @@ void loop() {
     Vec3D rotations;
     getIMUGyro(rotations);
     unsigned long currentTime = millis();
-    lastMeasurementMillis = currentTime;
     
     // Calculate the angular change since the last iteration.
     double angleChange = rotations.z * ((currentTime - lastMeasurementMillis) / 1000.0);
     // Move the motor to compensate for the rotation.
     baseMotor.step(lround(MOTOR_STEPS_PER_REVOLUTION / 360.0 * angleChange));
+    lastMeasurementMillis = currentTime;
 }
