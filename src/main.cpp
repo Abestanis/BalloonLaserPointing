@@ -17,23 +17,35 @@
 #define MOTOR_UPDATE_PERIOD_MICRO_S 2000
 
 /** The motor that is used to turn the base plate of the laser. */
-static Stepper baseMotor(MOTOR_STEPS_PER_REVOLUTION, 8, 10, 9, 11);
+static Stepper baseMotor(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S, 8, 9, 10, 11);
 
 /** The time in milliseconds since boot when the gyroscope was last read. */
 static unsigned long lastMeasurementMillis = 0;
+
+/** The target angle of the base motor. */
+static double targetBaseAngle = 0;
 
 void setup() {
     // Initialize the serial port.
     Serial.begin(9600);
     Serial.println("Boot");
-    // Set the motor speed.
-    baseMotor.setSpeed(
-            (60L * 1000L * 1000L / MOTOR_STEPS_PER_REVOLUTION) / MOTOR_UPDATE_PERIOD_MICRO_S);
     initImu();
     Serial.println("Boot complete");
     lastMeasurementMillis = millis();
 }
 
+/**
+ * Normalize the angle to be between 0 and 360 degrees.
+ * @param angle The angle to normalize in degrees.
+ * @return The normalized angle.
+ */
+static double normalizeAngle(double angle) {
+    angle = fmod(angle, 360);
+    if (angle < 0) {
+        angle += 360;
+    }
+    return angle;
+}
 
 void loop() {
     // Measure the rotation.
@@ -42,8 +54,11 @@ void loop() {
     unsigned long currentTime = millis();
     
     // Calculate the angular change since the last iteration.
-    double angleChange = rotations.z * ((currentTime - lastMeasurementMillis) / 1000.0);
+    targetBaseAngle += rotations.z * ((currentTime - lastMeasurementMillis) / 1000.0);
+    targetBaseAngle = normalizeAngle(targetBaseAngle);
+    
+    Serial.println(targetBaseAngle);
     // Move the motor to compensate for the rotation.
-    baseMotor.step(lround(MOTOR_STEPS_PER_REVOLUTION / 360.0 * angleChange));
+    baseMotor.setTargetAngle(targetBaseAngle);
     lastMeasurementMillis = currentTime;
 }
