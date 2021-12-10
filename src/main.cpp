@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#undef max  // See https://github.com/kekyo/gcc-toolchain/issues/3
+#undef min
 #include <Stepper.h>
 #include "imu.h"
 

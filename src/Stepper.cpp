@@ -1,14 +1,24 @@
 #include <cmath>
+#include <algorithm>
 #include <Arduino.h>
+#undef max  // See https://github.com/kekyo/gcc-toolchain/issues/3
+#undef min
 #include "Stepper.h"
+
+/** The maximum amount of jitter allowed for the motor update timer in microseconds. */
+#define MAX_TIMER_JITTER_MICRO_SEC 10
+
+static std::vector<Stepper*> stepperMotors = {};
 
 
 Stepper::Stepper(unsigned int numberOfSteps, unsigned long stepDelay, int motorPin1, int motorPin2,
-                 int motorPin3, int motorPin4) {
+                 int motorPin3, int motorPin4) : timer(DueTimer::getAvailable()) {
     this->stepDelay = stepDelay;
-    this->targetAngle = 0;
-    this->lastStepTime = 0;
     this->totalSteps = numberOfSteps;
+    this->targetAngle = 0;
+    this->targetStep = 0;
+    this->currentStep = 0;
+    this->lastStepTime = 0;
     
     // Arduino pins for the motor control connection.
     this->motorPin1 = motorPin1;
@@ -21,70 +31,81 @@ Stepper::Stepper(unsigned int numberOfSteps, unsigned long stepDelay, int motorP
     pinMode(this->motorPin2, OUTPUT);
     pinMode(this->motorPin3, OUTPUT);
     pinMode(this->motorPin4, OUTPUT);
+    
+    stepperMotors.push_back(this);
+    this->timer.attachInterrupt(&Stepper::updateMotors).start(stepDelay);
+}
+
+Stepper::~Stepper() {
+    this->timer.stop();
+    (void) std::remove(stepperMotors.begin(), stepperMotors.end(), this);
 }
 
 void Stepper::setTargetAngle(double angle) {
-    stepTo(getStepForAngle(angle));
-    targetAngle = angle;
+    this->targetAngle = angle;
+    this->targetStep = getStepForAngle(this->targetAngle);
 }
 
-void Stepper::stepTo(unsigned int targetStep) {
-    unsigned int stepNumber = getStepForAngle(targetAngle);
-    bool increasing = stepNumber < targetStep ?
-                      targetStep - stepNumber < this->totalSteps - targetStep + stepNumber :
-                      stepNumber - targetStep > this->totalSteps - stepNumber + targetStep;
-    
-    // Move one step at a time.
-    while (targetStep != stepNumber) {
-        uint32_t now = micros();
-        // Move only if the appropriate delay has passed.
-        if (now - this->lastStepTime >= this->stepDelay) {
-            // Remember the timeStamp of this step.
-            this->lastStepTime = now;
-            // Increment or decrement the step number.
-            if (increasing) {
-                stepNumber++;
-                if (stepNumber == this->totalSteps) {
-                    stepNumber = 0;
-                }
-            } else {
-                if (stepNumber == 0) {
-                    stepNumber = this->totalSteps;
-                }
-                stepNumber--;
-            }
-            setStep(stepNumber);
+void Stepper::updateMotors() {
+    uint32_t now = micros();
+    for (auto &motor: stepperMotors) {
+        if (now - motor->lastStepTime > motor->stepDelay - MAX_TIMER_JITTER_MICRO_SEC) {
+            motor->updateStep();
+            motor->lastStepTime = now;
         }
     }
 }
 
-void Stepper::setStep(unsigned int step) const {
+void Stepper::updateStep() {
+    if (this->targetStep != this->currentStep) {
+        bool increasing = this->currentStep < this->targetStep ?
+                          this->targetStep - this->currentStep <
+                          this->totalSteps - this->targetStep + this->currentStep :
+                          this->currentStep - this->targetStep >
+                          this->totalSteps - this->currentStep + this->targetStep;
+        unsigned int newStep;
+        if (increasing) {
+            newStep = this->currentStep + 1;
+            if (newStep == this->totalSteps) {
+                newStep = 0;
+            }
+        } else if (this->currentStep == 0) {
+            newStep = this->totalSteps;
+        } else {
+            newStep = this->currentStep - 1;
+        }
+        setStep(newStep);
+    }
+}
+
+void Stepper::setStep(unsigned int step) {
     switch (step % 4) {
     case 0:  // 1100
-        digitalWrite(motorPin1, HIGH);
-        digitalWrite(motorPin2, HIGH);
-        digitalWrite(motorPin3, LOW);
-        digitalWrite(motorPin4, LOW);
+        digitalWrite(this->motorPin1, HIGH);
+        digitalWrite(this->motorPin2, HIGH);
+        digitalWrite(this->motorPin3, LOW);
+        digitalWrite(this->motorPin4, LOW);
         break;
     case 1:  // 0110
-        digitalWrite(motorPin1, LOW);
-        digitalWrite(motorPin2, HIGH);
-        digitalWrite(motorPin3, HIGH);
-        digitalWrite(motorPin4, LOW);
+        digitalWrite(this->motorPin1, LOW);
+        digitalWrite(this->motorPin2, HIGH);
+        digitalWrite(this->motorPin3, HIGH);
+        digitalWrite(this->motorPin4, LOW);
         break;
     case 2:  //0011
-        digitalWrite(motorPin1, LOW);
-        digitalWrite(motorPin2, LOW);
-        digitalWrite(motorPin3, HIGH);
-        digitalWrite(motorPin4, HIGH);
+        digitalWrite(this->motorPin1, LOW);
+        digitalWrite(this->motorPin2, LOW);
+        digitalWrite(this->motorPin3, HIGH);
+        digitalWrite(this->motorPin4, HIGH);
         break;
     case 3:  //1001
-        digitalWrite(motorPin1, HIGH);
-        digitalWrite(motorPin2, LOW);
-        digitalWrite(motorPin3, LOW);
-        digitalWrite(motorPin4, HIGH);
+        digitalWrite(this->motorPin1, HIGH);
+        digitalWrite(this->motorPin2, LOW);
+        digitalWrite(this->motorPin3, LOW);
+        digitalWrite(this->motorPin4, HIGH);
         break;
     }
+    this->currentStep = step;
 }
 
 unsigned int Stepper::getStepForAngle(double angle) const {

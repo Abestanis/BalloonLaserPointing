@@ -81,9 +81,12 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
+#include <DueTimer.h>
+
 
 /**
- * A stepper motor that can rotate 360 degrees freely.
+ * A stepper motor that can freely rotate in 360 degrees.
  */
 class Stepper {
 public:
@@ -102,6 +105,11 @@ public:
             int motorPin3, int motorPin4);
     
     /**
+     * Stop and destruct the motor.
+     */
+    ~Stepper();
+    
+    /**
      * Set the target angle of the motor.
      *
      * @note The function will block until the motor reached the target angle.
@@ -110,20 +118,22 @@ public:
     void setTargetAngle(double angle);
 
 private:
+    /**
+     * Timer handler that updates the current step towards the target step.
+     */
+    static void updateMotors();
     
     /**
-     * Move the motor to the target step. The motor will take the shortest path to the target.
-     *
-     * @param targetStep The step to move to.
+     * Update the motor and advance to the next step towards the target step.
      */
-    void stepTo(unsigned int targetStep);
+    void updateStep();
     
     /**
      * Set the current step of the motor.
      *
      * @param step The step to step to.
      */
-    void setStep(unsigned int step) const;
+    void setStep(unsigned int step);
     
     /**
      * Convert an angle in degrees to the corresponding step.
@@ -149,6 +159,16 @@ private:
     double targetAngle;
     
     /**
+     * The step of the motor that is targeted by the targetAngle.
+     */
+    unsigned int targetStep;
+    
+    /**
+     * The current step the motor is on.
+     */
+    unsigned int currentStep;
+    
+    /**
      * The pin for the first connection to the motor.
      */
     int motorPin1;
@@ -172,4 +192,9 @@ private:
      * The time stamp in microseconds when the last step was taken.
      */
     uint32_t lastStepTime;
+    
+    /**
+     * The timer used to drive this motor.
+     */
+    DueTimer timer;
 };
