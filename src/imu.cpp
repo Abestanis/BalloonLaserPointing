@@ -1,9 +1,9 @@
 #include <Wire.h>
 #include <I2Cdev.h>
-#include <MPU6050.h>
+#include <MPU9250.h>
 #include "imu.h"
 
-static MPU6050 imu;
+static MPU9250 imu;
 static I2Cdev   I2C_M;
 
 static uint8_t buffer_m[6];
@@ -43,16 +43,6 @@ static volatile int mz_min =0;
 void initImu() {
     // join I2C bus (I2Cdev library doesn't do this automatically)
     Wire.begin();
-    delay(1000);
-    Wire.beginTransmission(0x68);
-    Wire.write(byte(117));
-    Wire.endTransmission();
-    Wire.requestFrom(0x68, 1);
-    while (!Wire.available()) { // if one byte was received
-        delay(10);
-    }
-    bool haveIMU = Wire.read() == 0x71;
-    
     
     // initialize device
     Serial.println("Initializing I2C devices...");
@@ -60,7 +50,8 @@ void initImu() {
     
     // verify connection
     Serial.println("Testing device connections...");
-    Serial.println(haveIMU ? "MPU6050 connection successful" : "MPU6050 connection failed");
+    bool haveIMU = imu.testConnection();
+    Serial.println(haveIMU ? "MPU9250 connection successful" : "MPU9250 connection failed");
     
     delay(1000);
     Serial.println("     ");
