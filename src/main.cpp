@@ -1,6 +1,8 @@
 #include <Arduino.h>
+
 #undef max  // See https://github.com/kekyo/gcc-toolchain/issues/3
 #undef min
+
 #include <Stepper.h>
 #include "imu.h"
 
@@ -26,6 +28,8 @@ static unsigned long lastMeasurementMillis = 0;
 
 /** The target angle of the base motor. */
 static double targetBaseAngle = 0;
+/** The radius of the Earth in meter. */
+#define  Rt 6378.137e3
 
 void setup() {
     // Initialize the serial port.
@@ -49,16 +53,50 @@ static double normalizeAngle(double angle) {
     return angle;
 }
 
+
+struct coord_GPS {
+    double longitude;
+    double latitude;
+    double altitude;
+};
+
+coord_GPS laser = {
+        .longitude=23,
+        .latitude=45,
+        .altitude= 23,
+};
+
+struct coord_ECI_moved {
+    double x;
+    double y;
+    double z;
+};
+
+static coord_ECI_moved conversion_GPS_to_ECI_moved(coord_GPS balloon_GPS) {
+    coord_ECI_moved balloon = {
+            .x=Rt *
+               (cos(balloon_GPS.latitude) * cos(balloon_GPS.longitude) - cos(laser.latitude) * cos(laser.longitude)),
+            .y=Rt *
+               (cos(balloon_GPS.latitude) * sin(balloon_GPS.longitude) - cos(laser.latitude) * sin(laser.longitude)),
+            .z=Rt * (sin(balloon_GPS.latitude) - sin(laser.latitude)),
+    };
+
+    return balloon;
+};
+
+
 void loop() {
+
+
     // Measure the rotation.
     Vec3D rotations;
     getIMUGyro(rotations);
     unsigned long currentTime = millis();
-    
+
     // Calculate the angular change since the last iteration.
     targetBaseAngle += rotations.z * ((currentTime - lastMeasurementMillis) / 1000.0);
     targetBaseAngle = normalizeAngle(targetBaseAngle);
-    
+
     Serial.println(targetBaseAngle);
     // Move the motor to compensate for the rotation.
     baseMotor.setTargetAngle(targetBaseAngle);
