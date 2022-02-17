@@ -75,28 +75,28 @@ struct coord_ECI_moved {
 static coord_ECI_moved conversion_GPS_to_ECI_moved(coord_GPS balloon_GPS) {
     coord_ECI_moved balloon = {
             .x=Rt *
-               (cos(balloon_GPS.latitude) * cos(balloon_GPS.longitude) - cos(laser.latitude) * cos(laser.longitude)),
+               (cos(balloon_GPS.latitude) * cos(balloon_GPS.longitude) -
+                cos(laser.latitude) * cos(laser.longitude)),
             .y=Rt *
-               (cos(balloon_GPS.latitude) * sin(balloon_GPS.longitude) - cos(laser.latitude) * sin(laser.longitude)),
+               (cos(balloon_GPS.latitude) * sin(balloon_GPS.longitude) -
+                cos(laser.latitude) * sin(laser.longitude)),
             .z=Rt * (sin(balloon_GPS.latitude) - sin(laser.latitude)),
     };
-
+    
     return balloon;
-};
+}
 
 
 void loop() {
-
-
     // Measure the rotation.
     Vec3D rotations;
     getIMUGyro(rotations);
     unsigned long currentTime = millis();
-
+    
     // Calculate the angular change since the last iteration.
     targetBaseAngle += rotations.z * ((currentTime - lastMeasurementMillis) / 1000.0);
     targetBaseAngle = normalizeAngle(targetBaseAngle);
-
+    
     Serial.println(targetBaseAngle);
     // Move the motor to compensate for the rotation.
     baseMotor.setTargetAngle(targetBaseAngle);
