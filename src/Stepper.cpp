@@ -1,8 +1,6 @@
 #include <cmath>
 #include <algorithm>
-#include <Arduino.h>
-#undef max  // See https://github.com/kekyo/gcc-toolchain/issues/3
-#undef min
+#include "arduinoSystem.h"
 #include "Stepper.h"
 
 /** The maximum amount of jitter allowed for the motor update timer in microseconds. */
