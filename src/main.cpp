@@ -2,6 +2,7 @@
 #include "arduinoSystem.h"
 #include <Stepper.h>
 #include "imu.h"
+#include "SerialConnection.h"
 
 
 /** The number of individual steps that make up a full revolution of the stepper motor. */
@@ -33,10 +34,11 @@ double b= 6356752.3142;
 double f=(a-b)/a;
 double e= sqrt(f*(2-f));
 
+/** The connection to a controller that can send commands. */
+static auto connection = SerialConnection(CommandHandler());
 
 void setup() {
-    // Initialize the serial port.
-    Serial.begin(9600);
+    SerialConnection::connect();
     Serial.println("Boot");
     initImu();
     Serial.println("Boot complete");
@@ -120,6 +122,8 @@ static coord_xyz conversion_GPS_to_LTP(coord_GPS balloon_GPS) {
 
 
 void loop() {
+    connection.fetchMessages();
+    
     // Measure the rotation.
     Vec3D rotations;
     getIMUGyro(rotations);
@@ -129,7 +133,6 @@ void loop() {
     targetBaseAngle += rotations.z * ((currentTime - lastMeasurementMillis) / 1000.0);
     targetBaseAngle = normalizeAngle(targetBaseAngle);
     
-    Serial.println(targetBaseAngle);
     // Move the motor to compensate for the rotation.
     baseMotor.setTargetAngle(targetBaseAngle);
     lastMeasurementMillis = currentTime;
