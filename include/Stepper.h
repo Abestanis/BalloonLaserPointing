@@ -92,7 +92,7 @@ class Stepper {
 public:
 
     /**
-     * Initialize a stepper motor.
+     * Initialize a stepper motor and start the calibration routine.
      *
      * @param numberOfSteps The number of steps that the motor can take per revolution.
      * @param stepDelay The delay between steps in microseconds.
@@ -118,16 +118,16 @@ public:
      */
     void setTargetAngle(double angle);
 
+    /**
+     * Asynchronously determine the reference step (0° angle) of the motor.
+     */
+    void calibrate();
+
 private:
     /**
      * Timer handler that updates the current step towards the target step.
      */
     static void updateMotors();
-
-    /**
-     * Determine the reference step (0° angle) of the motor.
-     */
-    void calibrate();
 
     /**
      * Update the motor and advance to the next step towards the target step.
@@ -177,7 +177,12 @@ private:
     /**
      * Reference step for an angle of zero.
      */
-    unsigned int referenceStep = 0;
+    unsigned int referenceStep;
+
+    /**
+     * The current step when the calibration was requested.
+     */
+    unsigned int calibrationStartStep = 0;
 
     /**
      * The pin for the first connection to the motor.

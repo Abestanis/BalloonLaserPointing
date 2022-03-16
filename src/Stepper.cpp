@@ -11,7 +11,7 @@ static std::vector<Stepper*> stepperMotors = {};
 
 Stepper::Stepper(unsigned int numberOfSteps, unsigned long stepDelay, int motorPin1, int motorPin2,
                  int motorPin3, int motorPin4, int calibrationPin) :
-        stepDelay(stepDelay), totalSteps(numberOfSteps), timer(DueTimer::getAvailable()) {
+        stepDelay(stepDelay), totalSteps(numberOfSteps), referenceStep(totalSteps), timer(DueTimer::getAvailable()) {
     // Arduino pins for the motor control connection.
     this->motorPin1 = motorPin1;
     this->motorPin2 = motorPin2;
@@ -51,16 +51,23 @@ void Stepper::updateMotors() {
 }
 
 void Stepper::calibrate() {
-    for (int i = 0; i < this->totalSteps; i++) {
-        if (digitalRead(this->calibrationPin) == HIGH) {
-            this->referenceStep = this->currentStep;
-            return;
-        }
-        setStep((this->currentStep + 1) % this->totalSteps);
-    }
+    this->calibrationStartStep = this->currentStep;
+    this->referenceStep = this->totalSteps;
 }
 
 void Stepper::updateStep() {
+    if (this->referenceStep == this->totalSteps) {
+        if (digitalRead(this->calibrationPin) != HIGH) {
+            setStep((this->currentStep + 1) % this->totalSteps);
+            if (this->currentStep == this->calibrationStartStep) {
+                // TODO: This is a temporary fix to prevent the motor from spinning more than 360°
+                //       Remove this when the restrictions are added elsewhere.
+                this->referenceStep = this->currentStep;
+            }
+            return;
+        }
+        this->referenceStep = this->currentStep;
+    }
     if (this->targetStep != this->currentStep) {
         bool increasing = this->currentStep < this->targetStep ?
                           this->targetStep - this->currentStep <
