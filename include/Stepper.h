@@ -125,9 +125,9 @@ private:
     static void updateMotors();
 
     /**
-     * Sets the reference angle of the motor.
+     * Determine the reference step (0° angle) of the motor.
      */
-    void Stepper::calibrationMotor()
+    void calibrate();
 
     /**
      * Update the motor and advance to the next step towards the target step.
@@ -162,22 +162,22 @@ private:
     /**
      * The angle that the motor should point to in degrees.
      */
-    double targetAngle;
+    double targetAngle = 0;
 
     /**
      * The step of the motor that is targeted by the targetAngle.
      */
-    unsigned int targetStep;
+    unsigned int targetStep = 0;
 
     /**
      * The current step the motor is on.
      */
-    unsigned int currentStep;
+    unsigned int currentStep = 0;
 
     /**
      * Reference step for an angle of zero.
      */
-    unsigned int referenceStep;
+    unsigned int referenceStep = 0;
 
     /**
      * The pin for the first connection to the motor.
@@ -206,7 +206,7 @@ private:
     /**
      * The time stamp in microseconds when the last step was taken.
      */
-    uint32_t lastStepTime;
+    uint32_t lastStepTime = 0;
 
     /**
      * The timer used to drive this motor.
