@@ -29,10 +29,7 @@ typedef struct [[gnu::packed]] {
 } MessageHeader;
 
 
-SerialConnection::SerialConnection(const CommandHandler &handler) : handler(handler) {
-}
-
-void SerialConnection::connect() {
+SerialConnection::SerialConnection(CommandHandler &handler) : handler(handler) {
     Serial.begin(9600);
 }
 
