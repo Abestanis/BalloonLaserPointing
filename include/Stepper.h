@@ -90,7 +90,7 @@
  */
 class Stepper {
 public:
-    
+
     /**
      * Initialize a stepper motor.
      *
@@ -100,15 +100,16 @@ public:
      * @param motorPin2 The pin number of the second connection to the motor.
      * @param motorPin3 The pin number of the third connection to the motor.
      * @param motorPin4 The pin number of the fourth connection to the motor.
+     * @param calibrationPin The pin number used for calibration of the zero angle of the motor.
      */
     Stepper(unsigned int numberOfSteps, unsigned long stepDelay, int motorPin1, int motorPin2,
-            int motorPin3, int motorPin4);
-    
+            int motorPin3, int motorPin4, int calibrationPin);
+
     /**
      * Stop and destruct the motor.
      */
     ~Stepper();
-    
+
     /**
      * Set the target angle of the motor.
      *
@@ -122,19 +123,24 @@ private:
      * Timer handler that updates the current step towards the target step.
      */
     static void updateMotors();
-    
+
+    /**
+     * Sets the reference angle of the motor.
+     */
+    void Stepper::calibrationMotor()
+
     /**
      * Update the motor and advance to the next step towards the target step.
      */
     void updateStep();
-    
+
     /**
      * Set the current step of the motor.
      *
      * @param step The step to step to.
      */
     void setStep(unsigned int step);
-    
+
     /**
      * Convert an angle in degrees to the corresponding step.
      *
@@ -142,57 +148,66 @@ private:
      * @return The step corresponding to the angle.
      */
     unsigned int getStepForAngle(double angle) const;
-    
+
     /**
      * The delay in microseconds between steps.
      */
     unsigned long stepDelay;
-    
+
     /**
      * The total number of steps that the motor can take.
      */
     unsigned int totalSteps;
-    
+
     /**
      * The angle that the motor should point to in degrees.
      */
     double targetAngle;
-    
+
     /**
      * The step of the motor that is targeted by the targetAngle.
      */
     unsigned int targetStep;
-    
+
     /**
      * The current step the motor is on.
      */
     unsigned int currentStep;
-    
+
+    /**
+     * Reference step for an angle of zero.
+     */
+    unsigned int referenceStep;
+
     /**
      * The pin for the first connection to the motor.
      */
     int motorPin1;
-    
+
     /**
      * The pin for the second connection to the motor.
      */
     int motorPin2;
-    
+
     /**
      * The pin for the third connection to the motor.
      */
     int motorPin3;
-    
+
     /**
      * The pin for the fourth connection to the motor.
      */
     int motorPin4;
-    
+
+    /**
+     * The pin used for calibration.
+     */
+    int calibrationPin;
     /**
      * The time stamp in microseconds when the last step was taken.
      */
     uint32_t lastStepTime;
-    
+
     /**
      * The timer used to drive this motor.
      */

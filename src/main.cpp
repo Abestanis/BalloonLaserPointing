@@ -19,7 +19,7 @@
 #define MOTOR_UPDATE_PERIOD_MICRO_S 2000
 
 /** The motor that is used to turn the base plate of the laser. */
-static Stepper baseMotor(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S, 8, 9, 10, 11);
+static Stepper baseMotor(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S, 8, 9, 10, 11, 7);
 
 /** The time in milliseconds since boot when the gyroscope was last read. */
 static unsigned long lastMeasurementMillis = 0;
