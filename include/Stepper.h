@@ -84,6 +84,7 @@
 #include <vector>
 #include <DueTimer.h>
 #include "units.h"
+#include "Pins.h"
 
 
 /**
@@ -103,8 +104,8 @@ public:
      * @param motorPin4 The pin number of the fourth connection to the motor.
      * @param calibrationPin The pin number used for calibration of the zero angle of the motor.
      */
-    Stepper(unsigned int numberOfSteps, unsigned long stepDelay, int motorPin1, int motorPin2,
-            int motorPin3, int motorPin4, int calibrationPin);
+    Stepper(unsigned int numberOfSteps, unsigned long stepDelay, Pin motorPin1, Pin motorPin2,
+            Pin motorPin3, Pin motorPin4, Pin calibrationPin);
 
     /**
      * Stop and destruct the motor.
@@ -188,27 +189,27 @@ private:
     /**
      * The pin for the first connection to the motor.
      */
-    int motorPin1;
+    Pin motorPin1;
 
     /**
      * The pin for the second connection to the motor.
      */
-    int motorPin2;
+    Pin motorPin2;
 
     /**
      * The pin for the third connection to the motor.
      */
-    int motorPin3;
+    Pin motorPin3;
 
     /**
      * The pin for the fourth connection to the motor.
      */
-    int motorPin4;
+    Pin motorPin4;
 
     /**
      * The pin used for calibration.
      */
-    int calibrationPin;
+    Pin calibrationPin;
     /**
      * The time stamp in microseconds when the last step was taken.
      */

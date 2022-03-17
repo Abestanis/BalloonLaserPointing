@@ -9,22 +9,18 @@
 static std::vector<Stepper*> stepperMotors = {};
 
 
-Stepper::Stepper(unsigned int numberOfSteps, unsigned long stepDelay, int motorPin1, int motorPin2,
-                 int motorPin3, int motorPin4, int calibrationPin) :
-        stepDelay(stepDelay), totalSteps(numberOfSteps), referenceStep(totalSteps), timer(DueTimer::getAvailable()) {
-    // Arduino pins for the motor control connection.
-    this->motorPin1 = motorPin1;
-    this->motorPin2 = motorPin2;
-    this->motorPin3 = motorPin3;
-    this->motorPin4 = motorPin4;
-    this->calibrationPin = calibrationPin;
+Stepper::Stepper(unsigned int numberOfSteps, unsigned long stepDelay, Pin motorPin1, Pin motorPin2,
+                 Pin motorPin3, Pin motorPin4, Pin calibrationPin) :
+        stepDelay(stepDelay), totalSteps(numberOfSteps), referenceStep(totalSteps),
+        motorPin1(motorPin1), motorPin2(motorPin2), motorPin3(motorPin3), motorPin4(motorPin4),
+        calibrationPin(calibrationPin), timer(DueTimer::getAvailable()) {
 
     // Set up the pins on the microcontroller.
-    pinMode(this->motorPin1, OUTPUT);
-    pinMode(this->motorPin2, OUTPUT);
-    pinMode(this->motorPin3, OUTPUT);
-    pinMode(this->motorPin4, OUTPUT);
-    pinMode(this->calibrationPin, INPUT);
+    pinMode(this->motorPin1.pinNumber, OUTPUT);
+    pinMode(this->motorPin2.pinNumber, OUTPUT);
+    pinMode(this->motorPin3.pinNumber, OUTPUT);
+    pinMode(this->motorPin4.pinNumber, OUTPUT);
+    pinMode(this->calibrationPin.pinNumber, INPUT);
 
     stepperMotors.push_back(this);
     this->timer.attachInterrupt(&Stepper::updateMotors).start(stepDelay);
@@ -42,7 +38,7 @@ void Stepper::setTargetAngle(deg_t angle) {
 
 void Stepper::updateMotors() {
     uint32_t now = micros();
-    for (auto &motor: stepperMotors) {
+    for (auto& motor: stepperMotors) {
         if (now - motor->lastStepTime > motor->stepDelay - MAX_TIMER_JITTER_MICRO_SEC) {
             motor->updateStep();
             motor->lastStepTime = now;
@@ -57,7 +53,7 @@ void Stepper::calibrate() {
 
 void Stepper::updateStep() {
     if (this->referenceStep == this->totalSteps) {
-        if (digitalRead(this->calibrationPin) != HIGH) {
+        if (digitalRead(this->calibrationPin.pinNumber) != HIGH) {
             setStep((this->currentStep + 1) % this->totalSteps);
             if (this->currentStep == this->calibrationStartStep) {
                 // TODO: This is a temporary fix to prevent the motor from spinning more than 360°
@@ -94,28 +90,28 @@ void Stepper::updateStep() {
 void Stepper::setStep(unsigned int step) {
     switch (step % 4) {
     case 0:  // 1100
-        digitalWrite(this->motorPin1, HIGH);
-        digitalWrite(this->motorPin2, HIGH);
-        digitalWrite(this->motorPin3, LOW);
-        digitalWrite(this->motorPin4, LOW);
+        digitalWrite(this->motorPin1.pinNumber, HIGH);
+        digitalWrite(this->motorPin2.pinNumber, HIGH);
+        digitalWrite(this->motorPin3.pinNumber, LOW);
+        digitalWrite(this->motorPin4.pinNumber, LOW);
         break;
     case 1:  // 0110
-        digitalWrite(this->motorPin1, LOW);
-        digitalWrite(this->motorPin2, HIGH);
-        digitalWrite(this->motorPin3, HIGH);
-        digitalWrite(this->motorPin4, LOW);
+        digitalWrite(this->motorPin1.pinNumber, LOW);
+        digitalWrite(this->motorPin2.pinNumber, HIGH);
+        digitalWrite(this->motorPin3.pinNumber, HIGH);
+        digitalWrite(this->motorPin4.pinNumber, LOW);
         break;
     case 2:  //0011
-        digitalWrite(this->motorPin1, LOW);
-        digitalWrite(this->motorPin2, LOW);
-        digitalWrite(this->motorPin3, HIGH);
-        digitalWrite(this->motorPin4, HIGH);
+        digitalWrite(this->motorPin1.pinNumber, LOW);
+        digitalWrite(this->motorPin2.pinNumber, LOW);
+        digitalWrite(this->motorPin3.pinNumber, HIGH);
+        digitalWrite(this->motorPin4.pinNumber, HIGH);
         break;
     case 3:  //1001
-        digitalWrite(this->motorPin1, HIGH);
-        digitalWrite(this->motorPin2, LOW);
-        digitalWrite(this->motorPin3, LOW);
-        digitalWrite(this->motorPin4, HIGH);
+        digitalWrite(this->motorPin1.pinNumber, HIGH);
+        digitalWrite(this->motorPin2.pinNumber, LOW);
+        digitalWrite(this->motorPin3.pinNumber, LOW);
+        digitalWrite(this->motorPin4.pinNumber, HIGH);
         break;
     }
     this->currentStep = step;

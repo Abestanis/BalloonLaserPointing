@@ -71,8 +71,9 @@ private:
     deg_t targetBaseAngle = deg_t(0);
 
     /** The motor that is used to turn the base plate of the laser. */
-    Stepper baseMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S, 8, 9, 10,
-            11, 7);
+    Stepper baseMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S,
+            Pins::baseMotor1, Pins::baseMotor2, Pins::baseMotor3,
+            Pins::baseMotor4, Pins::baseMotorCalibration);
 
     /**
      * The connection to a controller that can send commands.
