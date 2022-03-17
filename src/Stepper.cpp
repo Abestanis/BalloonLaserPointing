@@ -20,7 +20,7 @@ Stepper::Stepper(unsigned int numberOfSteps, unsigned long stepDelay, Pin motorP
     pinMode(this->motorPin2.pinNumber, OUTPUT);
     pinMode(this->motorPin3.pinNumber, OUTPUT);
     pinMode(this->motorPin4.pinNumber, OUTPUT);
-    pinMode(this->calibrationPin.pinNumber, INPUT);
+    pinMode(this->calibrationPin.pinNumber, INPUT_PULLUP);
 
     stepperMotors.push_back(this);
     this->timer.attachInterrupt(&Stepper::updateMotors).start(stepDelay);
