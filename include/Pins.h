@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 /**
  * A physical pin used by the program.
  */
