@@ -2,6 +2,7 @@
 
 #include "SerialConnection.h"
 #include "Stepper.h"
+#include "Vec3.h"
 
 
 /** The number of individual steps that make up a full revolution of the stepper motor. */
@@ -17,19 +18,10 @@
  */
 #define MOTOR_UPDATE_PERIOD_MICRO_S 2000
 
-struct coord_GPS {
-    /** Angles have to be transform in radian before assignation !!! **/
-    double longitude;
-    double latitude;
-    double altitude;
-};
-
-
-struct coord_xyz {
-    double x;
-    double y;
-    double z;
-};
+/**
+ * A position in a 3 dimensional space.
+ */
+typedef Vec3<double> Position;
 
 
 /**
@@ -37,8 +29,15 @@ struct coord_xyz {
  */
 class Program : private SerialConnection::CommandHandler {
 public:
+    /**
+     * Initialize the program.
+     */
     Program();
 
+    /**
+     * Run the program.
+     * @note This function will block and never return.
+     */
     [[noreturn]] void run();
 
 private:
@@ -48,7 +47,26 @@ private:
 
     void handleMotorsCalibration() override;
 
-    coord_xyz conversion_GPS_to_LTP(rad_t latitude, rad_t longitude, meter_t altitude);
+    /**
+     * Convert the coordinates given by the GPS to Earth-Centered, Earth-Fixed frame.
+     *
+     * @param latitude The latitude of the GPS position in radians.
+     * @param longitude The longitude of the GPS position in radians.
+     * @param altitude The altitude of the GPS position in meter.
+     * @return The GPS position in the Local Tangent Place reference frame.
+     */
+    static Position gpsToEcef(rad_t latitude, rad_t longitude, meter_t altitude);
+
+    /**
+     * Convert the coordinates given by the GPS to the Local Tangent Place reference frame.
+     * The center of this reference frame being the laser.
+     *
+     * @param latitude The latitude of the GPS position in radians.
+     * @param longitude The longitude of the GPS position in radians.
+     * @param altitude The altitude of the GPS position in meter.
+     * @return The GPS position in the Local Tangent Place reference frame.
+     */
+    Position gpsToLtp(rad_t latitude, rad_t longitude, meter_t altitude) const;
 
     /**
      * Normalize the angle to be between 0 and 360 degrees.
@@ -70,6 +88,16 @@ private:
     /** The target angle of the base motor. */
     deg_t targetBaseAngle = deg_t(0);
 
+    /**
+     * The position of the laser in the local tangent place reference frame.
+     */
+    Position laserPosition {0, 0, 0};
+
+    /**
+     * The position of the target in the local tangent place reference frame.
+     */
+    Position targetPosition {0, 0, 1};
+
     /** The motor that is used to turn the base plate of the laser. */
     Stepper baseMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S,
             Pins::baseMotor1, Pins::baseMotor2, Pins::baseMotor3,
@@ -79,6 +107,4 @@ private:
      * The connection to a controller that can send commands.
      */
     SerialConnection connection;
-
-    coord_xyz laserPosition;
 };

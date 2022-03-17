@@ -1,33 +1,10 @@
 #include "Program.h"
 #include "arduinoSystem.h"
 #include "imu.h"
-
-
-/** The radius of the Earth in meter. */
-#define  Rt 6378.137e3
-/** Geometrical parameters for coordinates calculation in the LTP */
-static double a = 6378137.0;
-static double b = 6356752.3142;
-static double f = (a - b) / a;
-static double e = sqrt(f * (2 - f));
+#include "Earth.h"
 
 
 Program::Program() : connection(*this) {
-    coord_GPS laser_GPS = {
-            /** Angle in radian !! **/
-            .longitude=23,
-            .latitude=45,
-            .altitude= 23,
-    };
-
-    float N_laser = a / sqrt(1 - pow(e, 2) * pow(sin(laser_GPS.latitude), 2));
-
-    laserPosition = {
-            .x=(laser_GPS.altitude + N_laser) * cos(laser_GPS.latitude) * cos(laser_GPS.longitude),
-            .y=(laser_GPS.altitude + N_laser) *
-               cos(laser_GPS.latitude) * sin(laser_GPS.longitude),
-            .z=(laser_GPS.altitude + (1 - pow(e, 2)) * N_laser) * sin(laser_GPS.latitude)
-    };
     Serial.println("Booting...");
     initImu();
     Serial.println("Boot complete");
@@ -61,14 +38,14 @@ void Program::handlePing() const {
 }
 
 void Program::handleGps(deg_t latitude, deg_t longitude, meter_t height) {
-    // TODO: Actually do something with the location
     Serial.print("latitude: ");
     Serial.print(latitude.value);
-    Serial.print("\nlongitude: ");
+    Serial.print(" longitude: ");
     Serial.print(longitude.value);
-    Serial.print("\nheight: ");
+    Serial.print(" height: ");
     Serial.print(height.value);
     Serial.print('\n');
+    targetPosition = gpsToLtp(rad_t(latitude), rad_t(longitude), height);
 }
 
 void Program::handleMotorsCalibration() {
@@ -76,30 +53,31 @@ void Program::handleMotorsCalibration() {
     baseMotor.calibrate();
 }
 
-coord_xyz Program::conversion_GPS_to_LTP(rad_t latitude, rad_t longitude, meter_t altitude) {
-    /** This function convert the coordinates given by the GPS to the Local Tangent Place reference frame. The center of this reference frame being the laser.**/
+Position Program::gpsToEcef(rad_t latitude, rad_t longitude, meter_t altitude) {
+    double N = Earth::semiMajorAxis.value /
+               sqrt(1 - pow(Earth::eccentricity, 2) * pow(sin(latitude.value), 2));
+    return {
+            (altitude.value + N) * cos(latitude.value) * cos(longitude.value),
+            (altitude.value + N) * cos(latitude.value) * sin(longitude.value),
+            (altitude.value + (1 - pow(Earth::eccentricity, 2)) * N) * sin(latitude.value),
+    };
+}
 
-    float N = a / sqrt(1 - pow(e, 2) * pow(sin(latitude.value), 2));
-
-    coord_xyz b_ECEF;
-    coord_xyz b_LTP;
-    coord_xyz Transition; /*This is a transition vector used for calculation*/
-
-    b_ECEF.x = (altitude.value + N) * cos(latitude.value) * cos(longitude.value);
-    b_ECEF.y = (altitude.value + N) * cos(latitude.value) * sin(longitude.value);
-    b_ECEF.z = (altitude.value + (1 - pow(e, 2)) * N) * sin(latitude.value);
-
-    Transition.x = b_ECEF.x - this->laserPosition.x;
-    Transition.y = b_ECEF.y - this->laserPosition.y;
-    Transition.z = b_ECEF.z - this->laserPosition.z;
-
-    b_LTP.x = Transition.x * (-sin(latitude.value)) + Transition.y * cos(longitude.value);
-    b_LTP.y = Transition.x * (-cos(longitude.value) * sin(latitude.value)) +
-              Transition.y * (-sin(latitude.value) * sin(longitude.value)) +
-              Transition.z * cos(latitude.value);
-    b_LTP.z = Transition.x * cos(latitude.value) * cos(longitude.value) +
-              Transition.y * cos(latitude.value) * sin(longitude.value) +
-              Transition.z * sin(latitude.value);
-
-    return b_LTP;
+Position Program::gpsToLtp(rad_t latitude, rad_t longitude, meter_t altitude) const {
+    Position b_ECEF = gpsToEcef(latitude, longitude, altitude);
+    // This is a transition vector used for calculation.
+    Position Transition = {
+            b_ECEF.x - this->laserPosition.x,
+            b_ECEF.y - this->laserPosition.y,
+            b_ECEF.z - this->laserPosition.z,
+    };
+    return {
+            Transition.x * (-sin(latitude.value)) + Transition.y * cos(longitude.value),
+            Transition.x * (-cos(longitude.value) * sin(latitude.value)) +
+            Transition.y * (-sin(latitude.value) * sin(longitude.value)) +
+            Transition.z * cos(latitude.value),
+            Transition.x * cos(latitude.value) * cos(longitude.value) +
+            Transition.y * cos(latitude.value) * sin(longitude.value) +
+            Transition.z * sin(latitude.value),
+    };
 }
