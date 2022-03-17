@@ -10,6 +10,7 @@ from serial import Serial
 class CommandId(Enum):
     PING = 0
     GPS = 1
+    CALIBRATE_MOTORS = 2
 
 
 class CommandSerializer:
@@ -21,6 +22,10 @@ class CommandSerializer:
     def serializeGps(cls, latitude, longitude, altitude):
         return cls._serializeCommand(
             CommandId.GPS, struct.pack('<ddd', float(latitude), float(longitude), float(altitude)))
+
+    @classmethod
+    def serializeCalibrateMotors(cls):
+        return cls._serializeCommand(CommandId.CALIBRATE_MOTORS)
 
     @staticmethod
     def _serializeCommand(commandId, payload=b''):
@@ -39,8 +44,10 @@ class Connection(Thread):
         self._connection.setPort('COM18')
         self._connection.open()
         self._isOpen = True
-        yield
-        self._isOpen = False
+        try:
+            yield
+        finally:
+            self._isOpen = False
 
     def send(self, data):
         self._connection.write(data)
@@ -56,6 +63,7 @@ class Controller:
     _SERIALIZERS = {
         CommandId.PING: CommandSerializer.serializePing,
         CommandId.GPS: CommandSerializer.serializeGps,
+        CommandId.CALIBRATE_MOTORS: CommandSerializer.serializeCalibrateMotors,
     }
 
     def __init__(self):

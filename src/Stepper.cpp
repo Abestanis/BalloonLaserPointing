@@ -62,10 +62,12 @@ void Stepper::updateStep() {
             if (this->currentStep == this->calibrationStartStep) {
                 // TODO: This is a temporary fix to prevent the motor from spinning more than 360°
                 //       Remove this when the restrictions are added elsewhere.
+                Serial.print("Calibration failed...\n");
                 this->referenceStep = this->currentStep;
             }
             return;
         }
+        Serial.print("Calibration complete...\n");
         this->referenceStep = this->currentStep;
     }
     if (this->targetStep != this->currentStep) {

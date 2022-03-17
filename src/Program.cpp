@@ -71,6 +71,11 @@ void Program::handleGps(deg_t latitude, deg_t longitude, meter_t height) {
     Serial.print('\n');
 }
 
+void Program::handleMotorsCalibration() {
+    Serial.print("Calibrating Motors...\n");
+    baseMotor.calibrate();
+}
+
 coord_xyz Program::conversion_GPS_to_LTP(rad_t latitude, rad_t longitude, meter_t altitude) {
     /** This function convert the coordinates given by the GPS to the Local Tangent Place reference frame. The center of this reference frame being the laser.**/
 

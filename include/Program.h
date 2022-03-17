@@ -42,19 +42,11 @@ public:
     [[noreturn]] void run();
 
 private:
-    /**
-     * Handle a ping request.
-     */
     void handlePing() const override;
 
-    /**
-     * Handle a new pointing target GPS position.
-     *
-     * @param latitude The latitude in degrees.
-     * @param longitude The longitude in degrees.
-     * @param height The height in meter.
-     */
     void handleGps(deg_t latitude, deg_t longitude, meter_t height) override;
+
+    void handleMotorsCalibration() override;
 
     coord_xyz conversion_GPS_to_LTP(rad_t latitude, rad_t longitude, meter_t altitude);
 

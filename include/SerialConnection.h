@@ -27,6 +27,11 @@ public:
         GPS = 1,
 
         /**
+         * Requests a motor calibration.
+         */
+        CALIBRATE_MOTORS = 2,
+
+        /**
          * No command, but indicates waiting for the header of the next command.
          */
         HEADER = std::numeric_limits<uint8_t>::max(),
@@ -50,6 +55,11 @@ public:
          * @param height The height in meter.
          */
         virtual void handleGps(deg_t latitude, deg_t longitude, meter_t height) = 0;
+
+        /**
+         * Handle a request to calibrate the motors.
+         */
+        virtual void handleMotorsCalibration() = 0;
     };
 
     /**
