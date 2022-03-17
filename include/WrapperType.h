@@ -26,8 +26,16 @@ public:
         return W(value + other);
     }
 
+    constexpr W operator+(const W other) const {
+        return W(value + other.value);
+    }
+
     constexpr W operator-(T other) const {
         return W(value - other);
+    }
+
+    constexpr W operator-(const W other) const {
+        return W(value - other.value);
     }
 
     constexpr W operator*(T other) const {
@@ -46,24 +54,48 @@ public:
         return value < other;
     }
 
+    constexpr bool operator<(const W other) const {
+        return value < other.value;
+    }
+
     constexpr bool operator<=(T other) const {
         return value <= other;
+    }
+
+    constexpr bool operator<=(const W other) const {
+        return value <= other.value;
     }
 
     constexpr bool operator>(T other) const {
         return value > other;
     }
 
+    constexpr bool operator>(const W other) const {
+        return value > other.value;
+    }
+
     constexpr bool operator>=(T other) const {
         return value >= other;
+    }
+
+    constexpr bool operator>=(const W other) const {
+        return value >= other.value;
     }
 
     constexpr bool operator==(T other) const {
         return value == other;
     }
 
+    constexpr bool operator==(const W other) const {
+        return value == other.value;
+    }
+
     constexpr bool operator!=(T other) const {
         return value != other;
+    }
+
+    constexpr bool operator!=(const W other) const {
+        return value != other.value;
     }
 
     W& operator+=(T other) {
@@ -71,8 +103,18 @@ public:
         return static_cast<W&>(*this);
     }
 
+    W& operator+=(const W other) {
+        value += other.value;
+        return static_cast<W&>(*this);
+    }
+
     W& operator-=(T other) {
         value -= other;
+        return static_cast<W&>(*this);
+    }
+
+    W& operator-=(const W other) {
+        value -= other.value;
         return static_cast<W&>(*this);
     }
 
