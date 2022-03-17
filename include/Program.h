@@ -54,17 +54,17 @@ private:
      * @param longitude The longitude in degrees.
      * @param height The height in meter.
      */
-    void handleGps(double latitude, double longitude, double height) override;
+    void handleGps(deg_t latitude, deg_t longitude, meter_t height) override;
 
-    coord_xyz conversion_GPS_to_LTP(double latitude, double longitude, double altitude);
+    coord_xyz conversion_GPS_to_LTP(rad_t latitude, rad_t longitude, meter_t altitude);
 
     /**
      * Normalize the angle to be between 0 and 360 degrees.
      * @param angle The angle to normalize in degrees.
      * @return The normalized angle.
      */
-    static double normalizeAngle(double angle) {
-        angle = fmod(angle, 360);
+    static deg_t normalizeAngle(deg_t angle) {
+        angle = deg_t(fmod(angle.value, 360));
         if (angle < 0) {
             angle += 360;
         }
@@ -76,7 +76,7 @@ private:
     unsigned long lastMeasurementMillis = 0;
 
     /** The target angle of the base motor. */
-    double targetBaseAngle = 0;
+    deg_t targetBaseAngle = deg_t(0);
 
     /** The motor that is used to turn the base plate of the laser. */
     Stepper baseMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S, 8, 9, 10,

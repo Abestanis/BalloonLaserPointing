@@ -60,41 +60,41 @@ void Program::handlePing() const {
     Serial.print("PONG\n");
 }
 
-void Program::handleGps(double latitude, double longitude, double height) {
+void Program::handleGps(deg_t latitude, deg_t longitude, meter_t height) {
     // TODO: Actually do something with the location
     Serial.print("latitude: ");
-    Serial.print(latitude);
+    Serial.print(latitude.value);
     Serial.print("\nlongitude: ");
-    Serial.print(longitude);
+    Serial.print(longitude.value);
     Serial.print("\nheight: ");
-    Serial.print(height);
+    Serial.print(height.value);
     Serial.print('\n');
 }
 
-coord_xyz Program::conversion_GPS_to_LTP(double latitude, double longitude, double altitude) {
+coord_xyz Program::conversion_GPS_to_LTP(rad_t latitude, rad_t longitude, meter_t altitude) {
     /** This function convert the coordinates given by the GPS to the Local Tangent Place reference frame. The center of this reference frame being the laser.**/
 
-    float N = a / sqrt(1 - pow(e, 2) * pow(sin(latitude), 2));
+    float N = a / sqrt(1 - pow(e, 2) * pow(sin(latitude.value), 2));
 
     coord_xyz b_ECEF;
     coord_xyz b_LTP;
     coord_xyz Transition; /*This is a transition vector used for calculation*/
 
-    b_ECEF.x = (altitude + N) * cos(latitude) * cos(longitude);
-    b_ECEF.y = (altitude + N) * cos(latitude) * sin(longitude);
-    b_ECEF.z = (altitude + (1 - pow(e, 2)) * N) * sin(latitude);
+    b_ECEF.x = (altitude.value + N) * cos(latitude.value) * cos(longitude.value);
+    b_ECEF.y = (altitude.value + N) * cos(latitude.value) * sin(longitude.value);
+    b_ECEF.z = (altitude.value + (1 - pow(e, 2)) * N) * sin(latitude.value);
 
     Transition.x = b_ECEF.x - this->laserPosition.x;
     Transition.y = b_ECEF.y - this->laserPosition.y;
     Transition.z = b_ECEF.z - this->laserPosition.z;
 
-    b_LTP.x = Transition.x * (-sin(latitude)) + Transition.y * cos(longitude);
-    b_LTP.y = Transition.x * (-cos(longitude) * sin(latitude)) +
-              Transition.y * (-sin(latitude) * sin(longitude)) +
-              Transition.z * cos(latitude);
-    b_LTP.z = Transition.x * cos(latitude) * cos(longitude) +
-              Transition.y * cos(latitude) * sin(longitude) +
-              Transition.z * sin(latitude);
+    b_LTP.x = Transition.x * (-sin(latitude.value)) + Transition.y * cos(longitude.value);
+    b_LTP.y = Transition.x * (-cos(longitude.value) * sin(latitude.value)) +
+              Transition.y * (-sin(latitude.value) * sin(longitude.value)) +
+              Transition.z * cos(latitude.value);
+    b_LTP.z = Transition.x * cos(latitude.value) * cos(longitude.value) +
+              Transition.y * cos(latitude.value) * sin(longitude.value) +
+              Transition.z * sin(latitude.value);
 
     return b_LTP;
 }

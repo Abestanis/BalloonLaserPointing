@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <limits>
+#include "units.h"
 
 
 /**
@@ -48,7 +49,7 @@ public:
          * @param longitude The longitude in degrees.
          * @param height The height in meter.
          */
-        virtual void handleGps(double latitude, double longitude, double height) = 0;
+        virtual void handleGps(deg_t latitude, deg_t longitude, meter_t height) = 0;
     };
 
     /**

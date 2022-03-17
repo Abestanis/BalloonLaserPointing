@@ -29,7 +29,7 @@ typedef struct [[gnu::packed]] {
 } MessageHeader;
 
 
-SerialConnection::SerialConnection(CommandHandler &handler) : handler(handler) {
+SerialConnection::SerialConnection(CommandHandler& handler) : handler(handler) {
     Serial.begin(9600);
 }
 
@@ -55,7 +55,8 @@ void SerialConnection::fetchMessages() {
     case GPS:
         GpsMessage gpsData;
         Serial.readBytes(reinterpret_cast<uint8_t*>(&gpsData), sizeof(gpsData));
-        handler.handleGps(gpsData.latitude, gpsData.longitude, gpsData.height);
+        handler.handleGps(deg_t(gpsData.latitude), deg_t(gpsData.longitude),
+                meter_t(gpsData.height));
         break;
     case HEADER:
         if (Serial.read() != SYNC_BYTE_1 || Serial.read() != SYNC_BYTE_2) {

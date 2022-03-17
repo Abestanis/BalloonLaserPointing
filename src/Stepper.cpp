@@ -35,7 +35,7 @@ Stepper::~Stepper() {
     (void) std::remove(stepperMotors.begin(), stepperMotors.end(), this);
 }
 
-void Stepper::setTargetAngle(double angle) {
+void Stepper::setTargetAngle(deg_t angle) {
     this->targetAngle = angle;
     this->targetStep = getStepForAngle(this->targetAngle);
 }
@@ -119,7 +119,7 @@ void Stepper::setStep(unsigned int step) {
     this->currentStep = step;
 }
 
-unsigned int Stepper::getStepForAngle(double angle) const {
-    return (lround((this->totalSteps - 1) / 360.0 * angle) + this->referenceStep) %
+unsigned int Stepper::getStepForAngle(deg_t angle) const {
+    return (lround((this->totalSteps - 1) / 360.0 * angle.value) + this->referenceStep) %
            this->totalSteps;
 }

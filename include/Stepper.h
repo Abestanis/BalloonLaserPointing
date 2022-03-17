@@ -83,6 +83,7 @@
 #include <cstdint>
 #include <vector>
 #include <DueTimer.h>
+#include "units.h"
 
 
 /**
@@ -116,7 +117,7 @@ public:
      * @note The function will block until the motor reached the target angle.
      * @param angle The target angle in degrees.
      */
-    void setTargetAngle(double angle);
+    void setTargetAngle(deg_t angle);
 
     /**
      * Asynchronously determine the reference step (0° angle) of the motor.
@@ -147,7 +148,7 @@ private:
      * @param angle The angle in degrees.
      * @return The step corresponding to the angle.
      */
-    unsigned int getStepForAngle(double angle) const;
+    unsigned int getStepForAngle(deg_t angle) const;
 
     /**
      * The delay in microseconds between steps.
@@ -162,7 +163,7 @@ private:
     /**
      * The angle that the motor should point to in degrees.
      */
-    double targetAngle = 0;
+    deg_t targetAngle = deg_t(0);
 
     /**
      * The step of the motor that is targeted by the targetAngle.
