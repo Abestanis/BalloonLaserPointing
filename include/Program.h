@@ -103,6 +103,11 @@ private:
             Pins::baseMotor1, Pins::baseMotor2, Pins::baseMotor3,
             Pins::baseMotor4, Pins::baseMotorCalibration);
 
+    /** The motor that is used to turn the final mirror, controlling the elevation. */
+    Stepper elevationMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S,
+            Pins::elevationMotor1, Pins::elevationMotor2, Pins::elevationMotor3,
+            Pins::elevationMotor4, Pins::elevationMotorCalibration);
+
     /**
      * The connection to a controller that can send commands.
      */

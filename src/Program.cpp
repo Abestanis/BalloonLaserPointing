@@ -51,6 +51,7 @@ void Program::handleGps(deg_t latitude, deg_t longitude, meter_t height) {
 void Program::handleMotorsCalibration() {
     Serial.print("Calibrating Motors...\n");
     baseMotor.calibrate();
+    elevationMotor.calibrate();
 }
 
 Position Program::gpsToEcef(rad_t latitude, rad_t longitude, meter_t altitude) {
