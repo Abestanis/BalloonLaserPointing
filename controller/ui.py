@@ -1,6 +1,7 @@
 import sys
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+
+from PyQt5.QtWidgets import QWidget, QTextEdit, QApplication, QLineEdit, QPushButton, QHBoxLayout, \
+    QVBoxLayout, QLabel, QComboBox
 
 
 def sendCommand(commandText):
