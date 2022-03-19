@@ -4,8 +4,7 @@ from PyQt5.QtGui import *
 
 
 def sendCommand(commandText):
-    printlog(commandText + '\n')
-    pass
+    print(commandText)
 
 
 def getPorts():
@@ -13,49 +12,40 @@ def getPorts():
 
 
 def setPointingSystemPort(port):
-    printlog("Controller : connection to the port " + port + "...\n")
-    pass
+    print("Controller : connection to the port " + port + "...")
 
 
 def setRtkAPort(port):
-    printlog("RTK A : connection to the port " + port + "...\n")
-    pass
+    print("RTK A : connection to the port " + port + "...")
 
 
 def setRtkBPort(port):
-    printlog("RTK B : connection to the port " + port + "...\n")
-    pass
+    print("RTK B : connection to the port " + port + "...")
 
 
 def setPointingTarget(target):
-    printlog("Set the target to " + target + '\n')
-    pass
-
-
-def printlog(test):
-    window.addLog(test)
+    print("Set the target to " + target)
 
 
 class ControllerUi(QWidget):
     def __init__(self):
         super().__init__()
         self.mbox = QTextEdit()
-        self.setUI()
+        self._setUI()
 
     def addLog(self, text):
         self.mbox.insertPlainText(text)
 
-    def setUI(self):
+    def _setUI(self):
         self.mbox.setReadOnly(True)
-        lineedit = QLineEdit()
+        self._commandEdit = QLineEdit()
         line_btn = QPushButton("Send", self)
         line_btn.setShortcut("Enter")
-        line_btn.clicked.connect(lambda: sendCommand(lineedit.text()))
-        line_btn.clicked.connect(lambda: lineedit.clear())
+        line_btn.clicked.connect(self._onSendCommand)
 
         prompt = QHBoxLayout()
 
-        prompt.addWidget(lineedit)
+        prompt.addWidget(self._commandEdit)
         prompt.addWidget(line_btn)
 
         leftBox = QVBoxLayout()
@@ -122,8 +112,17 @@ class ControllerUi(QWidget):
         self.setWindowTitle('Fenêtre principale')
         self.show()
 
+    def _onSendCommand(self):
+        sendCommand(self._commandEdit.text())
+        self._commandEdit.clear()
 
-app = QApplication(sys.argv)
-app.setStyle('fusio')
-window = ControllerUi()
-sys.exit(app.exec())
+
+def showControllerWindow():
+    app = QApplication(sys.argv)
+    app.setStyle('fusio')
+    window = ControllerUi()
+    return app.exec()
+
+
+if __name__ == '__main__':
+    sys.exit(showControllerWindow())
