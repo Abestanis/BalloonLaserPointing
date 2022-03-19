@@ -1,15 +1,12 @@
 import sys
 
+from serial.tools.list_ports import comports
 from PyQt5.QtWidgets import QWidget, QTextEdit, QApplication, QLineEdit, QPushButton, QHBoxLayout, \
     QVBoxLayout, QLabel, QComboBox
 
 
 def sendCommand(commandText):
     print(commandText)
-
-
-def getPorts():
-    return ['Port1', 'Port2']
 
 
 def setPointingSystemPort(port):
@@ -53,27 +50,24 @@ class ControllerUi(QWidget):
         leftBox.addWidget(self.mbox)
         leftBox.addLayout(prompt)
 
-        Ports = getPorts()
+        ports = list(comports())
 
         Label_1 = QLabel("Controller")
         combo_controller = QComboBox(self)
-        combo_controller.addItem(Ports[0])
-        combo_controller.addItem(Ports[1])
+        combo_controller.addItems(ports)
         controller_btn = QPushButton("Connect", self)
         controller_btn.clicked.connect(
             lambda: setPointingSystemPort(combo_controller.currentText()))
 
         Label_2 = QLabel("RTK - Balloon A")
         combo_RTK_A = QComboBox(self)
-        combo_RTK_A.addItem(Ports[0])
-        combo_RTK_A.addItem(Ports[1])
+        combo_RTK_A.addItems(ports)
         RTK_A_btn = QPushButton("Connect", self)
         RTK_A_btn.clicked.connect(lambda: setRtkAPort(combo_RTK_A.currentText()))
 
         Label_3 = QLabel("RTK - Balloon B")
         combo_RTK_B = QComboBox(self)
-        combo_RTK_B.addItem(Ports[0])
-        combo_RTK_B.addItem(Ports[1])
+        combo_RTK_B.addItems(ports)
         RTK_B_btn = QPushButton("Connect", self)
         RTK_B_btn.clicked.connect(lambda: setRtkBPort(combo_RTK_B.currentText()))
 
