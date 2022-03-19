@@ -4,140 +4,126 @@ from PyQt5.QtGui import *
 
 
 def sendCommand(commandText):
-	printlog(commandText+'\n')
-	pass
+    printlog(commandText + '\n')
+    pass
+
 
 def getPorts():
-	return ['Port1', 'Port2']
+    return ['Port1', 'Port2']
+
 
 def setPointingSystemPort(port):
-	printlog("Controller : connection to the port "+port+"...\n")
-	pass
+    printlog("Controller : connection to the port " + port + "...\n")
+    pass
 
-def setRtkAport(port):
-	printlog("RTK A : connection to the port "+port+"...\n")
-	pass
 
-def setRtkBport(port):
-	printlog("RTK B : connection to the port "+port+"...\n")
-	pass
+def setRtkAPort(port):
+    printlog("RTK A : connection to the port " + port + "...\n")
+    pass
+
+
+def setRtkBPort(port):
+    printlog("RTK B : connection to the port " + port + "...\n")
+    pass
+
 
 def setPointingTarget(target):
-	printlog("Set the target to "+target+'\n')
-	pass
+    printlog("Set the target to " + target + '\n')
+    pass
+
 
 def printlog(test):
-
-	fenetre.newlog(test)
-
-class Principale(QWidget):
-	
-	
-
-	def __init__(self):
-		super().__init__()
-		self.mbox = QTextEdit()
-		self.setUI()
-		
-	
-	
-	def newlog(self, text):
-		self.mbox.insertPlainText(text)
-		
-	def setUI(self):
-		self.mbox.setReadOnly(True)
-	
+    window.addLog(test)
 
 
-		lineedit=QLineEdit()
-		line_btn=QPushButton("Send",self)
-		line_btn.setShortcut("Enter")
-		line_btn.clicked.connect(lambda:sendCommand(lineedit.text()))
-		line_btn.clicked.connect(lambda:lineedit.clear())
+class ControllerUi(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.mbox = QTextEdit()
+        self.setUI()
 
-		prompt=QHBoxLayout()
+    def addLog(self, text):
+        self.mbox.insertPlainText(text)
 
-		prompt.addWidget(lineedit)
-		prompt.addWidget(line_btn)
+    def setUI(self):
+        self.mbox.setReadOnly(True)
+        lineedit = QLineEdit()
+        line_btn = QPushButton("Send", self)
+        line_btn.setShortcut("Enter")
+        line_btn.clicked.connect(lambda: sendCommand(lineedit.text()))
+        line_btn.clicked.connect(lambda: lineedit.clear())
 
-		leftbox=QVBoxLayout()
-		leftbox.addWidget(self.mbox)
-		leftbox.addLayout(prompt)
+        prompt = QHBoxLayout()
 
+        prompt.addWidget(lineedit)
+        prompt.addWidget(line_btn)
 
-		Ports=getPorts()
-		
-		Label_1=QLabel("Controller")
-		combo_controller=QComboBox(self)
-		combo_controller.addItem(Ports[0])
-		combo_controller.addItem(Ports[1])
-		controller_btn=QPushButton("Connect",self)
-		controller_btn.clicked.connect(lambda:setPointingSystemPort(combo_controller.currentText()))
-	
-		Label_2=QLabel("RTK - Ballon A")
-		combo_RTK_A=QComboBox(self)
-		combo_RTK_A.addItem(Ports[0])
-		combo_RTK_A.addItem(Ports[1])
-		RTK_A_btn=QPushButton("Connect",self)
-		RTK_A_btn.clicked.connect(lambda:setRtkAport(combo_RTK_A.currentText()))
+        leftBox = QVBoxLayout()
+        leftBox.addWidget(self.mbox)
+        leftBox.addLayout(prompt)
 
-		Label_3=QLabel("RTK - Ballon B")
-		combo_RTK_B=QComboBox(self)
-		combo_RTK_B.addItem(Ports[0])
-		combo_RTK_B.addItem(Ports[1])
-		RTK_B_btn=QPushButton("Connect",self)
-		RTK_B_btn.clicked.connect(lambda:setRtkBport(combo_RTK_B.currentText()))
+        Ports = getPorts()
 
-		Label_4=QLabel('Target')
-		combo_balloon=QComboBox(self)
-		combo_balloon.addItem("Balloon A")
-		combo_balloon.addItem("Balloon B")
-		balloon_btn=QPushButton("Select Target",self)
-		balloon_btn.clicked.connect(lambda:setPointingTarget(combo_balloon.currentText()))
+        Label_1 = QLabel("Controller")
+        combo_controller = QComboBox(self)
+        combo_controller.addItem(Ports[0])
+        combo_controller.addItem(Ports[1])
+        controller_btn = QPushButton("Connect", self)
+        controller_btn.clicked.connect(
+            lambda: setPointingSystemPort(combo_controller.currentText()))
 
-		
-		
+        Label_2 = QLabel("RTK - Balloon A")
+        combo_RTK_A = QComboBox(self)
+        combo_RTK_A.addItem(Ports[0])
+        combo_RTK_A.addItem(Ports[1])
+        RTK_A_btn = QPushButton("Connect", self)
+        RTK_A_btn.clicked.connect(lambda: setRtkAPort(combo_RTK_A.currentText()))
 
-		rightbox=QVBoxLayout()
+        Label_3 = QLabel("RTK - Balloon B")
+        combo_RTK_B = QComboBox(self)
+        combo_RTK_B.addItem(Ports[0])
+        combo_RTK_B.addItem(Ports[1])
+        RTK_B_btn = QPushButton("Connect", self)
+        RTK_B_btn.clicked.connect(lambda: setRtkBPort(combo_RTK_B.currentText()))
 
-		rightbox.addWidget(Label_1)
-		rightbox.addWidget(combo_controller)
-		rightbox.addWidget(controller_btn)
+        Label_4 = QLabel('Target')
+        combo_balloon = QComboBox(self)
+        combo_balloon.addItem("Balloon A")
+        combo_balloon.addItem("Balloon B")
+        balloon_btn = QPushButton("Select Target", self)
+        balloon_btn.clicked.connect(lambda: setPointingTarget(combo_balloon.currentText()))
 
-		rightbox.addWidget(Label_2)
-		rightbox.addWidget(combo_RTK_A)
-		rightbox.addWidget(RTK_A_btn)
+        rightBox = QVBoxLayout()
 
-		rightbox.addWidget(Label_3)
-		rightbox.addWidget(combo_RTK_B)
-		rightbox.addWidget(RTK_B_btn)
+        rightBox.addWidget(Label_1)
+        rightBox.addWidget(combo_controller)
+        rightBox.addWidget(controller_btn)
 
-		rightbox.addWidget(Label_4)
-		rightbox.addWidget(combo_balloon)
-		rightbox.addWidget(balloon_btn)
+        rightBox.addWidget(Label_2)
+        rightBox.addWidget(combo_RTK_A)
+        rightBox.addWidget(RTK_A_btn)
 
+        rightBox.addWidget(Label_3)
+        rightBox.addWidget(combo_RTK_B)
+        rightBox.addWidget(RTK_B_btn)
 
-	
-		w=QHBoxLayout()
+        rightBox.addWidget(Label_4)
+        rightBox.addWidget(combo_balloon)
+        rightBox.addWidget(balloon_btn)
 
-		
+        w = QHBoxLayout()
 
-		w.addLayout(leftbox)
-		w.addLayout(rightbox)
+        w.addLayout(leftBox)
+        w.addLayout(rightBox)
 
-		self.setLayout(w)
+        self.setLayout(w)
 
-		
-		
-		
-		
-		self.setGeometry(300,300,1000,500)
-		self.setWindowTitle('Fenêtre principale')
-		self.show()
-monApp=QApplication(sys.argv)
-monApp.setStyle('fusio')
-fenetre=Principale()
-sys.exit(monApp.exec_())
+        self.setGeometry(300, 300, 1000, 500)
+        self.setWindowTitle('Fenêtre principale')
+        self.show()
 
 
-
+app = QApplication(sys.argv)
+app.setStyle('fusio')
+window = ControllerUi()
+sys.exit(app.exec())
