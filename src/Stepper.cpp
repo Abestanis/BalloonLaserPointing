@@ -53,7 +53,7 @@ void Stepper::calibrate() {
 
 void Stepper::updateStep() {
     if (this->referenceStep == this->totalSteps) {
-        if (digitalRead(this->calibrationPin.pinNumber) != HIGH) {
+        if (digitalRead(this->calibrationPin.pinNumber) == HIGH) {
             setStep((this->currentStep + 1) % this->totalSteps);
             if (this->currentStep == this->calibrationStartStep) {
                 // TODO: This is a temporary fix to prevent the motor from spinning more than 360°
