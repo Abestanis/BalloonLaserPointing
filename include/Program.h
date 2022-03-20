@@ -43,27 +43,6 @@ private:
     void handleMotorsCalibration() override;
 
     /**
-     * Convert the coordinates given by the GPS to Earth-Centered, Earth-Fixed frame.
-     *
-     * @param latitude The latitude of the GPS position in radians.
-     * @param longitude The longitude of the GPS position in radians.
-     * @param altitude The altitude of the GPS position in meter.
-     * @return The GPS position in the Local Tangent Place reference frame.
-     */
-    static Position gpsToEcef(rad_t latitude, rad_t longitude, meter_t altitude);
-
-    /**
-     * Convert the coordinates given by the GPS to the Local Tangent Place reference frame.
-     * The center of this reference frame being the laser.
-     *
-     * @param latitude The latitude of the GPS position in radians.
-     * @param longitude The longitude of the GPS position in radians.
-     * @param altitude The altitude of the GPS position in meter.
-     * @return The GPS position in the Local Tangent Place reference frame.
-     */
-    Position gpsToLtp(rad_t latitude, rad_t longitude, meter_t altitude) const;
-
-    /**
      * Normalize the angle to be between 0 and 360 degrees.
      * @param angle The angle to normalize in degrees.
      * @return The normalized angle.

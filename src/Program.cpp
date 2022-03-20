@@ -53,32 +53,3 @@ void Program::handleMotorsCalibration() {
     baseMotor.calibrate();
     elevationMotor.calibrate();
 }
-
-Position Program::gpsToEcef(rad_t latitude, rad_t longitude, meter_t altitude) {
-    double N = Earth::semiMajorAxis.value /
-               sqrt(1 - pow(Earth::eccentricity, 2) * pow(sin(latitude.value), 2));
-    return {
-            (altitude.value + N) * cos(latitude.value) * cos(longitude.value),
-            (altitude.value + N) * cos(latitude.value) * sin(longitude.value),
-            (altitude.value + (1 - pow(Earth::eccentricity, 2)) * N) * sin(latitude.value),
-    };
-}
-
-Position Program::gpsToLtp(rad_t latitude, rad_t longitude, meter_t altitude) const {
-    Position b_ECEF = gpsToEcef(latitude, longitude, altitude);
-    // This is a transition vector used for calculation.
-    Position Transition = {
-            b_ECEF.x - this->laserPosition.x,
-            b_ECEF.y - this->laserPosition.y,
-            b_ECEF.z - this->laserPosition.z,
-    };
-    return {
-            Transition.x * (-sin(latitude.value)) + Transition.y * cos(longitude.value),
-            Transition.x * (-cos(longitude.value) * sin(latitude.value)) +
-            Transition.y * (-sin(latitude.value) * sin(longitude.value)) +
-            Transition.z * cos(latitude.value),
-            Transition.x * cos(latitude.value) * cos(longitude.value) +
-            Transition.y * cos(latitude.value) * sin(longitude.value) +
-            Transition.z * sin(latitude.value),
-    };
-}
