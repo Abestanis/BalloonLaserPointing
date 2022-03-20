@@ -33,7 +33,7 @@ class GPSParser:
         super().__init__()
         self._rawLogFilePath = rawLogFilePath
         self._locationLogFile = locationLogFile
-        self._connection = Serial(baudrate=115200)
+        self._connection = Serial(baudrate=115200, timeout=1)
         self._connection.set_buffer_size(rx_size=640000)
 
     def connect(self, port):
@@ -45,15 +45,17 @@ class GPSParser:
         self._connection.setPort(port)
         self._connection.open()
 
-    def parse(self):
-        """ Parse GPS messages from the serial connection until it is closed. """
+    def parse(self, runCondition=None):
+        """
+        Parse GPS messages from the serial connection until it is closed.
+
+        :param runCondition: A function that can return False to stop the parser loop.
+        """
         buffer = b''
-        while True:
-            with nullcontext() if self._rawLogFilePath is None else \
-                    open(self._rawLogFilePath, 'wb') as recordingFile:
+        with nullcontext() if self._rawLogFilePath is None else \
+                open(self._rawLogFilePath, 'wb') as recordingFile:
+            while runCondition is None or runCondition():
                 newData = self._connection.read(self._connection.inWaiting() or 1)
-                if not newData:
-                    break
                 if recordingFile is not None:
                     recordingFile.write(newData)
                 buffer += newData
