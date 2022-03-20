@@ -25,9 +25,11 @@ def setPointingTarget(target):
     print("Set the target to " + target)
 
 
-class ControllerUi(QWidget):
+class ControllerUi(QApplication):
     def __init__(self):
-        super().__init__()
+        super().__init__(sys.argv)
+        self.setStyle('fusio')
+        self._window = QWidget()
         self.mbox = QTextEdit()
         self._setUI()
 
@@ -37,7 +39,7 @@ class ControllerUi(QWidget):
     def _setUI(self):
         self.mbox.setReadOnly(True)
         self._commandEdit = QLineEdit()
-        line_btn = QPushButton("Send", self)
+        line_btn = QPushButton("Send", self._window)
         line_btn.setShortcut("Enter")
         line_btn.clicked.connect(self._onSendCommand)
 
@@ -53,29 +55,29 @@ class ControllerUi(QWidget):
         ports = list(comports())
 
         Label_1 = QLabel("Controller")
-        combo_controller = QComboBox(self)
+        combo_controller = QComboBox(self._window)
         combo_controller.addItems(ports)
-        controller_btn = QPushButton("Connect", self)
+        controller_btn = QPushButton("Connect", self._window)
         controller_btn.clicked.connect(
             lambda: setPointingSystemPort(combo_controller.currentText()))
 
         Label_2 = QLabel("RTK - Balloon A")
-        combo_RTK_A = QComboBox(self)
+        combo_RTK_A = QComboBox(self._window)
         combo_RTK_A.addItems(ports)
-        RTK_A_btn = QPushButton("Connect", self)
+        RTK_A_btn = QPushButton("Connect", self._window)
         RTK_A_btn.clicked.connect(lambda: setRtkAPort(combo_RTK_A.currentText()))
 
         Label_3 = QLabel("RTK - Balloon B")
-        combo_RTK_B = QComboBox(self)
+        combo_RTK_B = QComboBox(self._window)
         combo_RTK_B.addItems(ports)
-        RTK_B_btn = QPushButton("Connect", self)
+        RTK_B_btn = QPushButton("Connect", self._window)
         RTK_B_btn.clicked.connect(lambda: setRtkBPort(combo_RTK_B.currentText()))
 
         Label_4 = QLabel('Target')
-        combo_balloon = QComboBox(self)
+        combo_balloon = QComboBox(self._window)
         combo_balloon.addItem("Balloon A")
         combo_balloon.addItem("Balloon B")
-        balloon_btn = QPushButton("Select Target", self)
+        balloon_btn = QPushButton("Select Target", self._window)
         balloon_btn.clicked.connect(lambda: setPointingTarget(combo_balloon.currentText()))
 
         rightBox = QVBoxLayout()
@@ -101,23 +103,16 @@ class ControllerUi(QWidget):
         w.addLayout(leftBox)
         w.addLayout(rightBox)
 
-        self.setLayout(w)
+        self._window.setLayout(w)
 
-        self.setGeometry(300, 300, 1000, 500)
-        self.setWindowTitle('Fenêtre principale')
-        self.show()
+        self._window.setGeometry(300, 300, 1000, 500)
+        self._window.setWindowTitle('Laser Pointing Controller')
+        self._window.show()
 
     def _onSendCommand(self):
         sendCommand(self._commandEdit.text())
         self._commandEdit.clear()
 
 
-def showControllerWindow():
-    app = QApplication(sys.argv)
-    app.setStyle('fusio')
-    window = ControllerUi()
-    return app.exec()
-
-
 if __name__ == '__main__':
-    sys.exit(showControllerWindow())
+    sys.exit(ControllerUi().exec())
