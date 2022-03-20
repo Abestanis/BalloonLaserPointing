@@ -2,7 +2,7 @@
 
 #include "SerialConnection.h"
 #include "Stepper.h"
-#include "Vec3.h"
+#include "LocationTransformer.h"
 
 
 /** The number of individual steps that make up a full revolution of the stepper motor. */
@@ -17,11 +17,6 @@
  * e.g 2000 milliseconds between steps.
  */
 #define MOTOR_UPDATE_PERIOD_MICRO_S 2000
-
-/**
- * A position in a 3 dimensional space.
- */
-typedef Vec3<double> Position;
 
 
 /**
@@ -91,12 +86,12 @@ private:
     /**
      * The position of the laser in the local tangent place reference frame.
      */
-    Position laserPosition {0, 0, 0};
+    GpsPosition laserPosition {rad_t(0), rad_t(0), meter_t(0)};
 
     /**
      * The position of the target in the local tangent place reference frame.
      */
-    Position targetPosition {0, 0, 1};
+    GpsPosition targetPosition {rad_t(0), rad_t(0), meter_t(1)};
 
     /** The motor that is used to turn the base plate of the laser. */
     Stepper baseMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S,
