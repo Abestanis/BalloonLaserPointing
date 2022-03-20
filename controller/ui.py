@@ -1,40 +1,26 @@
 import sys
+from PyQt5.QtCore import pyqtSignal
 
+from serial import SerialException
 from serial.tools.list_ports import comports
 from PyQt5.QtWidgets import QWidget, QTextEdit, QApplication, QLineEdit, QPushButton, QHBoxLayout, \
-    QVBoxLayout, QLabel, QComboBox
-
-
-def sendCommand(commandText):
-    print(commandText)
-
-
-def setPointingSystemPort(port):
-    print("Controller : connection to the port " + port + "...")
-
-
-def setRtkAPort(port):
-    print("RTK A : connection to the port " + port + "...")
-
-
-def setRtkBPort(port):
-    print("RTK B : connection to the port " + port + "...")
-
-
-def setPointingTarget(target):
-    print("Set the target to " + target)
+    QVBoxLayout, QLabel, QComboBox, QErrorMessage
 
 
 class ControllerUi(QApplication):
-    def __init__(self):
+    _newLog = pyqtSignal(str)
+
+    def __init__(self, controller):
         super().__init__(sys.argv)
+        self._controller = controller
         self.setStyle('fusio')
         self._window = QWidget()
         self.mbox = QTextEdit()
         self._setUI()
+        self._newLog.connect(self.mbox.insertPlainText)
 
     def addLog(self, text):
-        self.mbox.insertPlainText(text)
+        self._newLog.emit(text)
 
     def _setUI(self):
         self.mbox.setReadOnly(True)
@@ -52,33 +38,34 @@ class ControllerUi(QApplication):
         leftBox.addWidget(self.mbox)
         leftBox.addLayout(prompt)
 
-        ports = list(comports())
+        ports = [portinfo.device for portinfo in comports()]
 
         Label_1 = QLabel("Controller")
         combo_controller = QComboBox(self._window)
         combo_controller.addItems(ports)
         controller_btn = QPushButton("Connect", self._window)
         controller_btn.clicked.connect(
-            lambda: setPointingSystemPort(combo_controller.currentText()))
+            lambda: self._controller.setPointingSystemPort(combo_controller.currentText()))
 
         Label_2 = QLabel("RTK - Balloon A")
         combo_RTK_A = QComboBox(self._window)
         combo_RTK_A.addItems(ports)
         RTK_A_btn = QPushButton("Connect", self._window)
-        RTK_A_btn.clicked.connect(lambda: setRtkAPort(combo_RTK_A.currentText()))
+        RTK_A_btn.clicked.connect(lambda: self._controller.setRtkAPort(combo_RTK_A.currentText()))
 
         Label_3 = QLabel("RTK - Balloon B")
         combo_RTK_B = QComboBox(self._window)
         combo_RTK_B.addItems(ports)
         RTK_B_btn = QPushButton("Connect", self._window)
-        RTK_B_btn.clicked.connect(lambda: setRtkBPort(combo_RTK_B.currentText()))
+        RTK_B_btn.clicked.connect(lambda: self._controller.setRtkBPort(combo_RTK_B.currentText()))
 
         Label_4 = QLabel('Target')
         combo_balloon = QComboBox(self._window)
         combo_balloon.addItem("Balloon A")
         combo_balloon.addItem("Balloon B")
         balloon_btn = QPushButton("Select Target", self._window)
-        balloon_btn.clicked.connect(lambda: setPointingTarget(combo_balloon.currentText()))
+        balloon_btn.clicked.connect(
+            lambda: self._controller.setPointingTarget(combo_balloon.currentText()))
 
         rightBox = QVBoxLayout()
 
@@ -110,9 +97,36 @@ class ControllerUi(QApplication):
         self._window.show()
 
     def _onSendCommand(self):
-        sendCommand(self._commandEdit.text())
-        self._commandEdit.clear()
+        try:
+            self._controller.sendCommand(self._commandEdit.text())
+            self._commandEdit.clear()
+        except (ValueError, SerialException) as error:
+            QErrorMessage().showMessage(f'Failed to send command:\n\n{error}')
 
 
 if __name__ == '__main__':
-    sys.exit(ControllerUi().exec())
+    class MockController:
+        @staticmethod
+        def sendCommand(commandText):
+            if not commandText:
+                raise ValueError('Empty command')
+            print(commandText)
+
+        @staticmethod
+        def setPointingSystemPort(port):
+            print("Controller : connection to the port " + port + "...")
+
+        @staticmethod
+        def setRtkAPort(port):
+            print("RTK A : connection to the port " + port + "...")
+
+        @staticmethod
+        def setRtkBPort(port):
+            print("RTK B : connection to the port " + port + "...")
+
+        @staticmethod
+        def setPointingTarget(target):
+            print("Set the target to " + target)
+
+
+    sys.exit(ControllerUi(MockController()).exec())
