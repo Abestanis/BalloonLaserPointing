@@ -59,9 +59,6 @@ private:
     /** The time in milliseconds since boot when the gyroscope was last read. */
     unsigned long lastMeasurementMillis = 0;
 
-    /** The target angle of the base motor. */
-    deg_t targetBaseAngle = deg_t(0);
-
     /**
      * The position of the laser in the local tangent place reference frame.
      */
@@ -71,6 +68,17 @@ private:
      * The position of the target in the local tangent place reference frame.
      */
     GpsPosition targetPosition {rad_t(0), rad_t(0), meter_t(1)};
+
+    /**
+     * The orientation of the laser pointing structure in relation to the geographical nord.
+     * 0° -> pointing directly nord in the 0 base motor position.
+     */
+    deg_t laserOrientation = deg_t(0);
+
+    /**
+     * The target angles for the motors.
+     */
+    LocalDirection targetMotorAngles = {deg_t(0), deg_t(0)};
 
     /** The motor that is used to turn the base plate of the laser. */
     Stepper baseMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S,
