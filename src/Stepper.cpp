@@ -32,6 +32,10 @@ Stepper::~Stepper() {
 }
 
 void Stepper::setTargetAngle(deg_t angle) {
+    if (std::isnan(angle.value)) {
+        Serial.println("Rejecting NaN target angle!");
+        return;
+    }
     this->targetAngle = angle;
     this->targetStep = getStepForAngle(this->targetAngle);
 }
