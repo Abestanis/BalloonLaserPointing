@@ -105,9 +105,11 @@ void Program::handleSetCalibrationPoint(SerialConnection::Motor motor) {
     switch (motor) {
     case SerialConnection::AZIMUTH_MOTOR:
         this->baseMotor.setCurrentAsCalibrationPoint();
+        Serial.println("Azimuth motor calibration point set");
         break;
     case SerialConnection::ELEVATION_MOTOR:
         this->elevationMotor.setCurrentAsCalibrationPoint();
+        Serial.println("Elevation motor calibration point set");
         break;
     }
 }
