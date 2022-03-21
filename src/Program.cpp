@@ -51,19 +51,22 @@ void Program::handleGps(deg_t latitude, deg_t longitude, meter_t height) {
     Serial.print(" longitude: ");
     Serial.print(longitude.value);
     Serial.print(" height: ");
-    Serial.print(height.value);
-    Serial.print('\n');
+    Serial.println(height.value);
     this->targetPosition = {rad_t(latitude), rad_t(longitude), height};
     LocalDirection targetDirection = LocationTransformer::directionFrom(
             this->laserPosition, this->targetPosition);
     this->targetMotorAngles.azimuth = deg_t(360) - laserOrientation + targetDirection.azimuth;
     this->targetMotorAngles.elevation = -targetDirection.elevation / 2.0;
+    Serial.print("target: Azimuth=");
+    Serial.print(this->targetMotorAngles.azimuth.value);
+    Serial.print(" elevation=");
+    Serial.println(this->targetMotorAngles.elevation.value);
     this->baseMotor.setTargetAngle(this->targetMotorAngles.azimuth);
     this->elevationMotor.setTargetAngle(this->targetMotorAngles.elevation);
 }
 
 void Program::handleMotorsCalibration() {
-    Serial.print("Calibrating Motors...\n");
+    Serial.println("Calibrating Motors...");
     this->baseMotor.calibrate();
     this->elevationMotor.calibrate();
 }
