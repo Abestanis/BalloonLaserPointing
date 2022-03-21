@@ -1,3 +1,4 @@
+#include "arduinoSystem.h"
 #include "LocationTransformer.h"
 #include "Earth.h"
 
@@ -93,6 +94,23 @@ static bool normalizeVectorDiff(LocalPosition& result, const LocalPosition& posi
     return true;
 }
 
+/**
+ * make sure a numerical value is between a minimum and a maximum.
+ *
+ * @param value The value to check.
+ * @param upper The maximum allowed value.
+ * @param lower The minimum allowed value.
+ * @return The clamped value, which is lower <= value <= upper.
+ */
+static double clamp(double value, double upper, double lower) {
+    if (value > upper) {
+        return upper;
+    } else if (value < lower) {
+        return lower;
+    }
+    return value;
+}
+
 LocalDirection LocationTransformer::directionFrom(const GpsPosition& observer,
                                                   const GpsPosition& target) {
     LocalPosition ap = localPositionFrom(observer);
@@ -124,7 +142,7 @@ LocalDirection LocationTransformer::directionFrom(const GpsPosition& observer,
         // The dot product of bma and norm = cos(zenith_angle), and zenith_angle = (90 deg) - altitude.
         // So altitude = 90 - acos(dotprod).
         elevation = deg_t(90.0) - (180.0 / M_PI) * std::acos(
-                bma.x.value * ap.nx + bma.y.value * ap.ny + bma.z.value * ap.nz);
+                clamp(bma.x.value * ap.nx + bma.y.value * ap.ny + bma.z.value * ap.nz, 1, -1));
     }
     return {azimuth, elevation};
 }
