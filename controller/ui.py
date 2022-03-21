@@ -65,7 +65,7 @@ class ControllerUi(QApplication):
         combo_balloon.addItem("Balloon B")
         balloon_btn = QPushButton("Select Target", self._window)
         balloon_btn.clicked.connect(
-            lambda: self._controller.setPointingTarget(combo_balloon.currentText()))
+            lambda: self._controller.setPointingTarget(combo_balloon.currentIndex()))
 
         rightBox = QVBoxLayout()
 
