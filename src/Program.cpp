@@ -100,3 +100,14 @@ void Program::handleSetMotorPosition(SerialConnection::Motor motor, deg_t positi
         break;
     }
 }
+
+void Program::handleSetCalibrationPoint(SerialConnection::Motor motor) {
+    switch (motor) {
+    case SerialConnection::AZIMUTH_MOTOR:
+        this->baseMotor.setCurrentAsCalibrationPoint();
+        break;
+    case SerialConnection::ELEVATION_MOTOR:
+        this->elevationMotor.setCurrentAsCalibrationPoint();
+        break;
+    }
+}

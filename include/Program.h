@@ -50,6 +50,8 @@ private:
 
     void handleSetMotorPosition(SerialConnection::Motor motor, deg_t position) override;
 
+    void handleSetCalibrationPoint(SerialConnection::Motor motor) override;
+
     /**
      * Normalize the angle to be between 0 and 360 degrees.
      * @param angle The angle to normalize in degrees.

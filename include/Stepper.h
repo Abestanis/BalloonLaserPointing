@@ -125,6 +125,11 @@ public:
      */
     void calibrate();
 
+    /**
+     * Set the current orientation as the calibration point.
+     */
+    void setCurrentAsCalibrationPoint();
+
 private:
     /**
      * Timer handler that updates the current step towards the target step.

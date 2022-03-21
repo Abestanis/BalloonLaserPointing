@@ -42,6 +42,11 @@ public:
         SET_MOTOR_POSITION = 4,
 
         /**
+         * Sets the current orientation as the calibration point for a given motor.
+         */
+        SET_CALIBRATION_POINT = 5,
+
+        /**
          * No command, but indicates waiting for the header of the next command.
          */
         HEADER = std::numeric_limits<uint8_t>::max(),
@@ -104,6 +109,13 @@ public:
          * @param position The angle to which to set the motor.
          */
         virtual void handleSetMotorPosition(Motor motor, deg_t position) = 0;
+
+        /**
+         * Set the current orientation a s the calibration point for the given motor.
+         *
+         * @param motor The target motor whose calibration point should be set.
+         */
+        virtual void handleSetCalibrationPoint(Motor motor) = 0;
     };
 
     /**

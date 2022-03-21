@@ -16,6 +16,7 @@ class CommandId(Enum):
     CALIBRATE_MOTORS = 2
     SET_LOCATION = 3
     SET_MOTOR_POSITION = 4
+    SET_CALIBRATION_POINT = 5
 
 
 class CommandSerializer:
@@ -41,6 +42,11 @@ class CommandSerializer:
     def serializeSetMotorPosition(cls, motor, angle):
         return cls._serializeCommand(CommandId.SET_MOTOR_POSITION, struct.pack(
             '<Bd', int(motor), float(angle)))
+
+    @classmethod
+    def serializeSetCalibrationPoint(cls, motor):
+        return cls._serializeCommand(
+            CommandId.SET_CALIBRATION_POINT, struct.pack('<Bd', int(motor)))
 
     @staticmethod
     def _serializeCommand(commandId, payload=b''):
@@ -128,6 +134,7 @@ class Controller:
         CommandId.CALIBRATE_MOTORS: CommandSerializer.serializeCalibrateMotors,
         CommandId.SET_LOCATION: CommandSerializer.serializeSetLocation,
         CommandId.SET_MOTOR_POSITION: CommandSerializer.serializeSetMotorPosition,
+        CommandId.SET_CALIBRATION_POINT: CommandSerializer.serializeSetCalibrationPoint,
     }
 
     def __init__(self):

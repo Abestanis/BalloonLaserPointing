@@ -121,3 +121,7 @@ unsigned int Stepper::getStepForAngle(deg_t angle) const {
     return (lround((this->totalSteps - 1) / 360.0 * angle.value) + this->referenceStep) %
            this->totalSteps;
 }
+
+void Stepper::setCurrentAsCalibrationPoint() {
+    this->referenceStep = this->currentStep;
+}

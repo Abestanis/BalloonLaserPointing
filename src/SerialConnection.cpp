@@ -43,6 +43,14 @@ typedef struct [[gnu::packed]] {
     double angle;
 } SetMotorPositionMessage;
 
+/**
+ * The structure of a SetCalibrationPoint message.
+ */
+typedef struct [[gnu::packed]] {
+    /** The motor that should be calibrated. */
+    SerialConnection::Motor motor;
+} SetCalibrationPointMessage;
+
 /** The start of every message. */
 typedef struct [[gnu::packed]] {
     /** Synchronization bytes to allow to detect the start of a message. */
@@ -70,6 +78,9 @@ void SerialConnection::fetchMessages() {
         break;
     case SET_MOTOR_POSITION:
         expectedSize = sizeof(SetMotorPositionMessage);
+        break;
+    case SET_CALIBRATION_POINT:
+        expectedSize = sizeof(SetCalibrationPointMessage);
         break;
     case HEADER:
         expectedSize = sizeof(MessageHeader);
@@ -99,8 +110,16 @@ void SerialConnection::fetchMessages() {
         break;
     case SET_MOTOR_POSITION:
         SetMotorPositionMessage setMotorPositionData;
-        Serial.readBytes(reinterpret_cast<uint8_t*>(&setMotorPositionData), sizeof(setMotorPositionData));
-        handler.handleSetMotorPosition(setMotorPositionData.motor, deg_t(setMotorPositionData.angle));
+        Serial.readBytes(reinterpret_cast<uint8_t*>(&setMotorPositionData),
+                sizeof(setMotorPositionData));
+        handler.handleSetMotorPosition(setMotorPositionData.motor,
+                deg_t(setMotorPositionData.angle));
+        break;
+    case SET_CALIBRATION_POINT:
+        SetCalibrationPointMessage setCalibrationPointData;
+        Serial.readBytes(reinterpret_cast<uint8_t*>(&setCalibrationPointData),
+                sizeof(setCalibrationPointData));
+        handler.handleSetCalibrationPoint(setCalibrationPointData.motor);
         break;
     case HEADER:
         if (Serial.read() != SYNC_BYTE_1 || Serial.read() != SYNC_BYTE_2) {
