@@ -1,7 +1,6 @@
 import sys
 import struct
 
-from enum import Enum
 from threading import Thread, Condition, Lock
 
 from serial import Serial
@@ -10,47 +9,39 @@ from ui import ControllerUi
 from gpsParser import GPSParser
 
 
-class CommandId(Enum):
-    PING = 0
-    GPS = 1
-    CALIBRATE_MOTORS = 2
-    SET_LOCATION = 3
-    SET_MOTOR_POSITION = 4
-    SET_CALIBRATION_POINT = 5
+class Command:
+    """ A telecommand that can be sent to the pointing system. """
 
+    def __init__(self, name, parameterSerializer=None):
+        """
+        Initialize a new telecommand.
 
-class CommandSerializer:
-    @classmethod
-    def serializePing(cls):
-        return cls._serializeCommand(CommandId.PING)
+        :param name: The name of the telecommand.
+        :param parameterSerializer: An optional serializer for parameters.
+        """
+        super().__init__()
+        self._name = name
+        self._parameterSerializer = parameterSerializer
 
-    @classmethod
-    def serializeGps(cls, latitude, longitude, altitude):
-        return cls._serializeCommand(
-            CommandId.GPS, struct.pack('<ddd', float(latitude), float(longitude), float(altitude)))
+    @property
+    def name(self):
+        """
+        :return: The name of this telecommand.
+        """
+        return self._name
 
-    @classmethod
-    def serializeCalibrateMotors(cls):
-        return cls._serializeCommand(CommandId.CALIBRATE_MOTORS)
+    def serialize(self, *args, **kwargs):
+        """
+        Serialize this telecommand, including any required parameters.
 
-    @classmethod
-    def serializeSetLocation(cls, latitude, longitude, altitude, orientation):
-        return cls._serializeCommand(CommandId.SET_LOCATION, struct.pack(
-            '<dddd', float(latitude), float(longitude), float(altitude), float(orientation)))
-
-    @classmethod
-    def serializeSetMotorPosition(cls, motor, angle):
-        return cls._serializeCommand(CommandId.SET_MOTOR_POSITION, struct.pack(
-            '<Bd', int(motor), float(angle)))
-
-    @classmethod
-    def serializeSetCalibrationPoint(cls, motor):
-        return cls._serializeCommand(
-            CommandId.SET_CALIBRATION_POINT, struct.pack('<Bd', int(motor)))
-
-    @staticmethod
-    def _serializeCommand(commandId, payload=b''):
-        return struct.pack('<BBB', 0xAA, 0x55, commandId.value) + payload
+        :param args: Parameters for the telecommand, will be passed to the serializer.
+        :param kwargs: Parameters for the telecommand, will be passed to the serializer.
+        :return: The serialized command.
+        """
+        commandId = Controller.COMMANDS.index(self)
+        payload = b'' if self._parameterSerializer is None else \
+            self._parameterSerializer(*args, **kwargs)
+        return struct.pack('<BBB', 0xAA, 0x55, commandId) + payload
 
 
 class ConnectionThread(Thread):
@@ -128,14 +119,22 @@ class GpsParserThread(ConnectionThread, GPSParser):
 
 
 class Controller:
-    _SERIALIZERS = {
-        CommandId.PING: CommandSerializer.serializePing,
-        CommandId.GPS: CommandSerializer.serializeGps,
-        CommandId.CALIBRATE_MOTORS: CommandSerializer.serializeCalibrateMotors,
-        CommandId.SET_LOCATION: CommandSerializer.serializeSetLocation,
-        CommandId.SET_MOTOR_POSITION: CommandSerializer.serializeSetMotorPosition,
-        CommandId.SET_CALIBRATION_POINT: CommandSerializer.serializeSetCalibrationPoint,
-    }
+    COMMANDS = [
+        # Send a PING, expect a PONG back.
+        Command('PING'),
+        # Set the GPS position of the pointing target.
+        Command('GPS', lambda latitude, longitude, altitude: struct.pack(
+            '<ddd', float(latitude), float(longitude), float(altitude))),
+        # Trigger the automatic calibration of the motors.
+        Command('CALIBRATE_MOTORS'),
+        # Set the position and zero pointing orientation of the structure.
+        Command('SET_LOCATION', lambda latitude, longitude, altitude, orientation: struct.pack(
+            '<dddd', float(latitude), float(longitude), float(altitude), float(orientation))),
+        # Manually set the motor position to a specific angle.
+        Command('SET_MOTOR_POSITION', lambda motor: struct.pack('<Bd', int(motor))),
+        # Set the calibration angle of a motor to the current angle.
+        Command('SET_CALIBRATION_POINT'),
+    ]
 
     def __init__(self):
         super().__init__()
@@ -144,6 +143,7 @@ class Controller:
         self._balloonAGpsParser = GpsParserThread(self)
         self._balloonBGpsParser = GpsParserThread(self)
         self._ui = ControllerUi(self)
+        self._gpsCommand = self._findCommand('GPS')
 
     def run(self):
         threads = [self._connection, self._balloonAGpsParser, self._balloonBGpsParser]
@@ -159,13 +159,9 @@ class Controller:
 
     def sendCommand(self, commandText):
         arguments = commandText.split()
-        command = arguments.pop(0)
+        command = self._findCommand(arguments.pop(0))
         try:
-            commandId = CommandId[command.upper()]
-        except KeyError:
-            raise ValueError(f'Invalid command: "{command}"')
-        try:
-            commandData = self._SERIALIZERS[commandId](*arguments)
+            commandData = command.serialize(*arguments)
         except TypeError as error:
             raise ValueError(f'Invalid argument(s): "{error}"')
         self._connection.send(commandData)
@@ -188,7 +184,7 @@ class Controller:
 
     def onNewLocation(self, source, location):
         if self._pointingTarget != [self._balloonAGpsParser, self._balloonBGpsParser].index(source):
-            command = self._SERIALIZERS[CommandId.GPS](
+            command = self._gpsCommand.serialize(
                 location.latitude, location.longitude, location.altitude)
             self._connection.send(command)
 
@@ -196,6 +192,12 @@ class Controller:
         text = data.decode('utf-8', errors='replace')
         print(text, end='', flush=True)
         self._ui.addLog(text)
+
+    def _findCommand(self, name):
+        try:
+            return next(command for command in self.COMMANDS if command.name == name)
+        except StopIteration:
+            raise ValueError(f'Invalid command: "{name}"')
 
 
 def main():
