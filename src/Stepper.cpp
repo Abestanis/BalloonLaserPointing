@@ -11,7 +11,7 @@ static std::vector<Stepper*> stepperMotors = {};
 
 Stepper::Stepper(unsigned int numberOfSteps, unsigned long stepDelay, Pin motorPin1, Pin motorPin2,
                  Pin motorPin3, Pin motorPin4, Pin calibrationPin) :
-        stepDelay(stepDelay), totalSteps(numberOfSteps), referenceStep(totalSteps),
+        stepDelay(stepDelay), totalSteps(numberOfSteps), referenceStep(0),
         motorPin1(motorPin1), motorPin2(motorPin2), motorPin3(motorPin3), motorPin4(motorPin4),
         calibrationPin(calibrationPin), timer(DueTimer::getAvailable()) {
 
