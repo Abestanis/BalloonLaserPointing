@@ -25,6 +25,7 @@ class ControllerUi(QApplication):
     def _setUI(self):
         self.mbox.setReadOnly(True)
         self._commandEdit = QLineEdit()
+        self._commandEdit.returnPressed.connect(self._onSendCommand)
         line_btn = QPushButton("Send", self._window)
         line_btn.setShortcut("Enter")
         line_btn.clicked.connect(self._onSendCommand)
