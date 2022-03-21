@@ -48,6 +48,8 @@ private:
     void handleSetLocation(deg_t latitude, deg_t longitude, meter_t height,
                            deg_t orientation) override;
 
+    void handleSetMotorPosition(SerialConnection::Motor motor, deg_t position) override;
+
     /**
      * Normalize the angle to be between 0 and 360 degrees.
      * @param angle The angle to normalize in degrees.

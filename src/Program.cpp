@@ -46,11 +46,11 @@ void Program::handlePing() const {
 }
 
 void Program::handleGps(deg_t latitude, deg_t longitude, meter_t height) {
-    Serial.print("Target: latitude=");
+    Serial.print("Target: Latitude=");
     Serial.print(latitude.value);
-    Serial.print(" longitude=");
+    Serial.print(" Longitude=");
     Serial.print(longitude.value);
-    Serial.print(" height=");
+    Serial.print(" Height=");
     Serial.println(height.value);
     this->targetPosition = {rad_t(latitude), rad_t(longitude), height};
     updateTargetMotorAngles();
@@ -64,13 +64,13 @@ void Program::handleMotorsCalibration() {
 
 void Program::handleSetLocation(deg_t latitude, deg_t longitude, meter_t height,
                                 deg_t orientation) {
-    Serial.print("New location: latitude=");
+    Serial.print("New location: Latitude=");
     Serial.print(latitude.value);
-    Serial.print(" longitude=");
+    Serial.print(" Longitude=");
     Serial.print(longitude.value);
-    Serial.print(" height=");
+    Serial.print(" Height=");
     Serial.print(height.value);
-    Serial.print(" orientation=");
+    Serial.print(" Orientation=");
     Serial.println(orientation.value);
     laserPosition = {rad_t(latitude), rad_t(longitude), height};
     laserOrientation = orientation;
@@ -84,8 +84,19 @@ void Program::updateTargetMotorAngles() {
     this->targetMotorAngles.elevation = -targetDirection.elevation / 2.0;
     Serial.print("target: Azimuth=");
     Serial.print(this->targetMotorAngles.azimuth.value);
-    Serial.print(" elevation=");
+    Serial.print(" Elevation=");
     Serial.println(this->targetMotorAngles.elevation.value);
     this->baseMotor.setTargetAngle(this->targetMotorAngles.azimuth);
     this->elevationMotor.setTargetAngle(this->targetMotorAngles.elevation);
+}
+
+void Program::handleSetMotorPosition(SerialConnection::Motor motor, deg_t position) {
+    switch (motor) {
+    case SerialConnection::AZIMUTH_MOTOR:
+        this->baseMotor.setTargetAngle(position);
+        break;
+    case SerialConnection::ELEVATION_MOTOR:
+        this->elevationMotor.setTargetAngle(position);
+        break;
+    }
 }

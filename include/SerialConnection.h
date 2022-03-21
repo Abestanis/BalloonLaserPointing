@@ -37,9 +37,29 @@ public:
         SET_LOCATION = 3,
 
         /**
+         * Sets the motor position to a specific angle.
+         */
+        SET_MOTOR_POSITION = 4,
+
+        /**
          * No command, but indicates waiting for the header of the next command.
          */
         HEADER = std::numeric_limits<uint8_t>::max(),
+    };
+
+    /**
+     * An id for all installed motors.
+     */
+    enum Motor: uint8_t {
+        /**
+         * The motor that controls the azimuth angle (the base motor).
+         */
+        AZIMUTH_MOTOR = 0,
+
+        /**
+         * The motor that controls the elevation angle (the secondary motor).
+         */
+        ELEVATION_MOTOR = 1,
     };
 
     /**
@@ -76,6 +96,14 @@ public:
          */
         virtual void handleSetLocation(
                 deg_t latitude, deg_t longitude, meter_t height, deg_t orientation) = 0;
+
+        /**
+         * Handle a request to set the position of a motor.
+         *
+         * @param motor The motor to control.
+         * @param position The angle to which to set the motor.
+         */
+        virtual void handleSetMotorPosition(Motor motor, deg_t position) = 0;
     };
 
     /**

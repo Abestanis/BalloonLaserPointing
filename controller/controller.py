@@ -15,6 +15,7 @@ class CommandId(Enum):
     GPS = 1
     CALIBRATE_MOTORS = 2
     SET_LOCATION = 3
+    SET_MOTOR_POSITION = 4
 
 
 class CommandSerializer:
@@ -35,6 +36,11 @@ class CommandSerializer:
     def serializeSetLocation(cls, latitude, longitude, altitude, orientation):
         return cls._serializeCommand(CommandId.SET_LOCATION, struct.pack(
             '<dddd', float(latitude), float(longitude), float(altitude), float(orientation)))
+
+    @classmethod
+    def serializeSetMotorPosition(cls, motor, angle):
+        return cls._serializeCommand(CommandId.SET_MOTOR_POSITION, struct.pack(
+            '<Bd', int(motor), float(angle)))
 
     @staticmethod
     def _serializeCommand(commandId, payload=b''):
@@ -121,6 +127,7 @@ class Controller:
         CommandId.GPS: CommandSerializer.serializeGps,
         CommandId.CALIBRATE_MOTORS: CommandSerializer.serializeCalibrateMotors,
         CommandId.SET_LOCATION: CommandSerializer.serializeSetLocation,
+        CommandId.SET_MOTOR_POSITION: CommandSerializer.serializeSetMotorPosition,
     }
 
     def __init__(self):

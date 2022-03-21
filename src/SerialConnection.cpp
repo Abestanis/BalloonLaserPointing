@@ -1,4 +1,3 @@
-#include <algorithm>
 #include "arduinoSystem.h"
 #include "SerialConnection.h"
 
@@ -34,6 +33,16 @@ typedef struct [[gnu::packed]] {
     double orientation;
 } SetLocationMessage;
 
+/**
+ * The structure of a SetMotorPosition message.
+ */
+typedef struct [[gnu::packed]] {
+    /** The motor that should be controlled. */
+    SerialConnection::Motor motor;
+    /** The target angle of the motor. */
+    double angle;
+} SetMotorPositionMessage;
+
 /** The start of every message. */
 typedef struct [[gnu::packed]] {
     /** Synchronization bytes to allow to detect the start of a message. */
@@ -58,6 +67,9 @@ void SerialConnection::fetchMessages() {
         break;
     case SET_LOCATION:
         expectedSize = sizeof(SetLocationMessage);
+        break;
+    case SET_MOTOR_POSITION:
+        expectedSize = sizeof(SetMotorPositionMessage);
         break;
     case HEADER:
         expectedSize = sizeof(MessageHeader);
@@ -84,6 +96,11 @@ void SerialConnection::fetchMessages() {
         Serial.readBytes(reinterpret_cast<uint8_t*>(&setLocationData), sizeof(setLocationData));
         handler.handleSetLocation(deg_t(setLocationData.latitude), deg_t(setLocationData.longitude),
                 meter_t(setLocationData.height), deg_t(setLocationData.orientation));
+        break;
+    case SET_MOTOR_POSITION:
+        SetMotorPositionMessage setMotorPositionData;
+        Serial.readBytes(reinterpret_cast<uint8_t*>(&setMotorPositionData), sizeof(setMotorPositionData));
+        handler.handleSetMotorPosition(setMotorPositionData.motor, deg_t(setMotorPositionData.angle));
         break;
     case HEADER:
         if (Serial.read() != SYNC_BYTE_1 || Serial.read() != SYNC_BYTE_2) {
