@@ -6,7 +6,7 @@ import struct
 
 from threading import Thread, Condition, Lock
 
-from serial import Serial
+from serial import Serial, SerialException
 
 from ui import ControllerUi
 from gpsParser import GPSParser
@@ -191,7 +191,10 @@ class Controller:
         if self._pointingTarget != [self._balloonAGpsParser, self._balloonBGpsParser].index(source):
             command = self._gpsCommand.serialize(
                 location.latitude, location.longitude, location.altitude)
-            self._connection.send(command)
+            try:
+                self._connection.send(command)
+            except SerialException as error:
+                print(f'Failed to send location: {error}')
 
     def onNewLog(self, data):
         text = data.decode('utf-8', errors='replace')
