@@ -106,6 +106,9 @@ class GpsParserThread(ConnectionThread, GPSParser):
         self._heightOffset = heightOffset
         self._lastLocation = None
 
+    def run(self):
+        self.parse(self._runCondition)
+
     def open(self, port):
         super().connect(port)
         super().open()
