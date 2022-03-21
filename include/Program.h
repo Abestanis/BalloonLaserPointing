@@ -18,6 +18,9 @@
  */
 #define MOTOR_UPDATE_PERIOD_MICRO_S 2000
 
+/** Whether or not the IMU should be used to compensate rotations of the laser structure. */
+#define USE_IMU false
+
 
 /**
  * A handler for incoming telecommands.
@@ -55,9 +58,10 @@ private:
         return angle;
     }
 
-
+#if USE_IMU
     /** The time in milliseconds since boot when the gyroscope was last read. */
     unsigned long lastMeasurementMillis = 0;
+#endif /* USE_IMU */
 
     /**
      * The position of the laser in the local tangent place reference frame.
