@@ -178,11 +178,11 @@ class Controller:
 
     def setRtkAPort(self, port):
         print(f'RTK A : connection to the port {port}...')
-        self._balloonAGpsParser.connect(port)
+        self._balloonAGpsParser.open(port)
 
     def setRtkBPort(self, port):
         print(f'RTK B : connection to the port {port}...')
-        self._balloonBGpsParser.connect(port)
+        self._balloonBGpsParser.open(port)
 
     def setPointingTarget(self, target):
         print(f'Set the target to {target}')
