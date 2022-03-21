@@ -120,7 +120,7 @@ class GpsParserThread(ConnectionThread, GPSParser):
     def _handleParsedLocation(self, location):
         location.altitude -= self._heightOffset
         self._lastLocation = location
-        self._controller.onNewLocation(location)
+        self._controller.onNewLocation(self, location)
         super()._handleParsedLocation(location)
 
 
@@ -191,7 +191,7 @@ class Controller:
         self.onNewLocation(activeSource, activeSource.lastLocation)
 
     def onNewLocation(self, source, location):
-        if self._pointingTarget != [self._balloonAGpsParser, self._balloonBGpsParser].index(source):
+        if self._pointingTarget == [self._balloonAGpsParser, self._balloonBGpsParser].index(source):
             command = self._gpsCommand.serialize(
                 location.latitude, location.longitude, location.altitude)
             try:
