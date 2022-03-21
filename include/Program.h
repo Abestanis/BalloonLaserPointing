@@ -9,6 +9,12 @@
 #define MOTOR_STEPS_PER_REVOLUTION 2048
 
 /**
+ * The gear ratio between the small and the main gear that the base motor is turning.
+ * E.g the main gear is X times larger than the small gear.
+ */
+#define BASE_MOTOR_GEAR_MULTIPLIER 4
+
+/**
  * The time to wait between updates in microseconds.
  * The datasheet (https://www.gotronic.fr/pj-1136.pdf) specifies a maximum response frequency of
  * 900 phases per seconds, e.g ~1111 microseconds need to be waited before switching to the next
@@ -97,8 +103,8 @@ private:
     LocalDirection targetMotorAngles = {deg_t(0), deg_t(0)};
 
     /** The motor that is used to turn the base plate of the laser. */
-    Stepper baseMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S,
-            Pins::baseMotor1, Pins::baseMotor2, Pins::baseMotor3,
+    Stepper baseMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION * BASE_MOTOR_GEAR_MULTIPLIER,
+            MOTOR_UPDATE_PERIOD_MICRO_S, Pins::baseMotor1, Pins::baseMotor2, Pins::baseMotor3,
             Pins::baseMotor4, Pins::baseMotorCalibration);
 
     /** The motor that is used to turn the final mirror, controlling the elevation. */
