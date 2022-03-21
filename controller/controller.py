@@ -184,6 +184,8 @@ class Controller:
     def setPointingTarget(self, target):
         print(f'Set the target to {target}')
         self._pointingTarget = target
+        activeSource = [self._balloonAGpsParser, self._balloonBGpsParser][target]
+        self.onNewLocation(activeSource, activeSource.lastLocation)
 
     def onNewLocation(self, source, location):
         if self._pointingTarget != [self._balloonAGpsParser, self._balloonBGpsParser].index(source):
