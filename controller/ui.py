@@ -102,7 +102,7 @@ class ControllerUi(QApplication):
             self._controller.sendCommand(self._commandEdit.text())
             self._commandEdit.clear()
         except (ValueError, SerialException) as error:
-            QErrorMessage().showMessage(f'Failed to send command:\n\n{error}')
+            QErrorMessage(self._window).showMessage(f'Failed to send command:\n\n{error}')
 
 
 if __name__ == '__main__':
