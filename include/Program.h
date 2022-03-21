@@ -45,6 +45,9 @@ private:
 
     void handleMotorsCalibration() override;
 
+    void handleSetLocation(deg_t latitude, deg_t longitude, meter_t height,
+                           deg_t orientation) override;
+
     /**
      * Normalize the angle to be between 0 and 360 degrees.
      * @param angle The angle to normalize in degrees.
@@ -57,6 +60,11 @@ private:
         }
         return angle;
     }
+
+    /**
+     * Update the motor angles for the current target and laser locations.
+     */
+    void updateTargetMotorAngles();
 
 #if USE_IMU
     /** The time in milliseconds since boot when the gyroscope was last read. */

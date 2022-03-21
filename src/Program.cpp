@@ -46,13 +46,38 @@ void Program::handlePing() const {
 }
 
 void Program::handleGps(deg_t latitude, deg_t longitude, meter_t height) {
-    Serial.print("latitude: ");
+    Serial.print("Target: latitude=");
     Serial.print(latitude.value);
-    Serial.print(" longitude: ");
+    Serial.print(" longitude=");
     Serial.print(longitude.value);
-    Serial.print(" height: ");
+    Serial.print(" height=");
     Serial.println(height.value);
     this->targetPosition = {rad_t(latitude), rad_t(longitude), height};
+    updateTargetMotorAngles();
+}
+
+void Program::handleMotorsCalibration() {
+    Serial.println("Calibrating Motors...");
+    this->baseMotor.calibrate();
+    this->elevationMotor.calibrate();
+}
+
+void Program::handleSetLocation(deg_t latitude, deg_t longitude, meter_t height,
+                                deg_t orientation) {
+    Serial.print("New location: latitude=");
+    Serial.print(latitude.value);
+    Serial.print(" longitude=");
+    Serial.print(longitude.value);
+    Serial.print(" height=");
+    Serial.print(height.value);
+    Serial.print(" orientation=");
+    Serial.println(orientation.value);
+    laserPosition = {rad_t(latitude), rad_t(longitude), height};
+    laserOrientation = orientation;
+    updateTargetMotorAngles();
+}
+
+void Program::updateTargetMotorAngles() {
     LocalDirection targetDirection = LocationTransformer::directionFrom(
             this->laserPosition, this->targetPosition);
     this->targetMotorAngles.azimuth = deg_t(360) - laserOrientation + targetDirection.azimuth;
@@ -63,10 +88,4 @@ void Program::handleGps(deg_t latitude, deg_t longitude, meter_t height) {
     Serial.println(this->targetMotorAngles.elevation.value);
     this->baseMotor.setTargetAngle(this->targetMotorAngles.azimuth);
     this->elevationMotor.setTargetAngle(this->targetMotorAngles.elevation);
-}
-
-void Program::handleMotorsCalibration() {
-    Serial.println("Calibrating Motors...");
-    this->baseMotor.calibrate();
-    this->elevationMotor.calibrate();
 }

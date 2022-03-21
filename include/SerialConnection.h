@@ -32,6 +32,11 @@ public:
         CALIBRATE_MOTORS = 2,
 
         /**
+         * Sets the location and orientation of the laser pointing structure.
+         */
+        SET_LOCATION = 3,
+
+        /**
          * No command, but indicates waiting for the header of the next command.
          */
         HEADER = std::numeric_limits<uint8_t>::max(),
@@ -60,6 +65,17 @@ public:
          * Handle a request to calibrate the motors.
          */
         virtual void handleMotorsCalibration() = 0;
+
+        /**
+         * Handle a new location and orientation for the laser pointing structure.
+         *
+         * @param latitude The latitude of the new location in degrees.
+         * @param longitude The longitude of the new location in degrees.
+         * @param height The height of the new location in meters.
+         * @param orientation The new orientation in degrees from the north direction.
+         */
+        virtual void handleSetLocation(
+                deg_t latitude, deg_t longitude, meter_t height, deg_t orientation) = 0;
     };
 
     /**

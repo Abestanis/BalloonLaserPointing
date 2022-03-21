@@ -20,6 +20,20 @@ typedef struct [[gnu::packed]] {
     double height;
 } GpsMessage;
 
+/**
+ * The structure of a SetLocation message.
+ */
+typedef struct [[gnu::packed]] {
+    /** The latitude in degrees. */
+    double latitude;
+    /** The longitude in degrees. */
+    double longitude;
+    /** The height in meters. */
+    double height;
+    /** The orientation in degrees from north. */
+    double orientation;
+} SetLocationMessage;
+
 /** The start of every message. */
 typedef struct [[gnu::packed]] {
     /** Synchronization bytes to allow to detect the start of a message. */
@@ -42,6 +56,9 @@ void SerialConnection::fetchMessages() {
     case GPS:
         expectedSize = sizeof(GpsMessage);
         break;
+    case SET_LOCATION:
+        expectedSize = sizeof(SetLocationMessage);
+        break;
     case HEADER:
         expectedSize = sizeof(MessageHeader);
         break;
@@ -61,6 +78,12 @@ void SerialConnection::fetchMessages() {
         break;
     case CALIBRATE_MOTORS:
         handler.handleMotorsCalibration();
+        break;
+    case SET_LOCATION:
+        SetLocationMessage setLocationData;
+        Serial.readBytes(reinterpret_cast<uint8_t*>(&setLocationData), sizeof(setLocationData));
+        handler.handleSetLocation(deg_t(setLocationData.latitude), deg_t(setLocationData.longitude),
+                meter_t(setLocationData.height), deg_t(setLocationData.orientation));
         break;
     case HEADER:
         if (Serial.read() != SYNC_BYTE_1 || Serial.read() != SYNC_BYTE_2) {
