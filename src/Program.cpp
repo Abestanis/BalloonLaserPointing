@@ -80,9 +80,9 @@ void Program::handleSetLocation(deg_t latitude, deg_t longitude, meter_t height,
 void Program::updateTargetMotorAngles() {
     LocalDirection targetDirection = LocationTransformer::directionFrom(
             this->laserPosition, this->targetPosition);
-    this->targetMotorAngles.azimuth = deg_t(360) - laserOrientation + targetDirection.azimuth;
-    this->targetMotorAngles.elevation = -targetDirection.elevation / 2.0;
-    Serial.print("target: Azimuth=");
+    this->targetMotorAngles.azimuth = deg_t(180) - laserOrientation + targetDirection.azimuth;
+    this->targetMotorAngles.elevation = targetDirection.elevation / 2.0 - deg_t(90);
+    Serial.print("Target: Azimuth=");
     Serial.print(this->targetMotorAngles.azimuth.value);
     Serial.print(" Elevation=");
     Serial.println(this->targetMotorAngles.elevation.value);
