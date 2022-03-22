@@ -260,17 +260,13 @@ class Controller:
             thread.join()
         return result
 
-    def sendCommand(self, commandText):
+    def sendCommand(self, command, arguments):
         """
         Send a command to the laser pointing system.
 
-        :param commandText: The textual representation of the command.
+        :param command: The command to send.
+        :param arguments: A list of arguments for the command.
         """
-        arguments = commandText.split()
-        try:
-            command = self._findCommand(arguments.pop(0))
-        except IndexError:
-            return
         try:
             commandData = command.serialize(*arguments)
         except TypeError as error:

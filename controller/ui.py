@@ -24,6 +24,10 @@ class ControllerUi(QApplication):
 
     def _setUI(self):
         self.mbox.setReadOnly(True)
+        self._commandComboBox = QComboBox()
+        for command in self._controller.COMMANDS:
+            self._commandComboBox.addItem(command.name, command)
+
         self._commandEdit = QLineEdit()
         self._commandEdit.returnPressed.connect(self._onSendCommand)
         line_btn = QPushButton("Send", self._window)
@@ -32,6 +36,7 @@ class ControllerUi(QApplication):
 
         prompt = QHBoxLayout()
 
+        prompt.addWidget(self._commandComboBox)
         prompt.addWidget(self._commandEdit)
         prompt.addWidget(line_btn)
 
@@ -101,7 +106,8 @@ class ControllerUi(QApplication):
 
     def _onSendCommand(self):
         try:
-            self._controller.sendCommand(self._commandEdit.text())
+            self._controller.sendCommand(
+                self._commandComboBox.currentData(), self._commandEdit.text().split())
             self._commandEdit.clear()
         except (ValueError, SerialException) as error:
             QErrorMessage(self._window).showMessage(f'Failed to send command:\n\n{error}')
@@ -123,10 +129,8 @@ class ControllerUi(QApplication):
 if __name__ == '__main__':
     class MockController:
         @staticmethod
-        def sendCommand(commandText):
-            if not commandText:
-                raise ValueError('Empty command')
-            print(commandText)
+        def sendCommand(command, arguments):
+            print(f'Sending {command.name} (arguments: {arguments})')
 
         @staticmethod
         def setPointingSystemPort(port):
