@@ -39,26 +39,27 @@ class ControllerUi(QApplication):
         leftBox.addWidget(self.mbox)
         leftBox.addLayout(prompt)
 
-        ports = [portinfo.device for portinfo in comports()]
+        refresh_btn = QPushButton('Refresh Ports', self._window)
+        refresh_btn.clicked.connect(self._refreshPortList)
 
         Label_1 = QLabel("Controller")
-        combo_controller = QComboBox(self._window)
-        combo_controller.addItems(ports)
+        self._pointingSystemPortComboBox = QComboBox(self._window)
         controller_btn = QPushButton("Connect", self._window)
-        controller_btn.clicked.connect(
-            lambda: self._controller.setPointingSystemPort(combo_controller.currentText()))
+        controller_btn.clicked.connect(lambda: self._controller.setPointingSystemPort(
+            self._pointingSystemPortComboBox.currentText()))
 
         Label_2 = QLabel("RTK - Balloon A")
-        combo_RTK_A = QComboBox(self._window)
-        combo_RTK_A.addItems(ports)
+        self._rtkAPortComboBox = QComboBox(self._window)
         RTK_A_btn = QPushButton("Connect", self._window)
-        RTK_A_btn.clicked.connect(lambda: self._controller.setRtkAPort(combo_RTK_A.currentText()))
+        RTK_A_btn.clicked.connect(
+            lambda: self._controller.setRtkAPort(self._rtkAPortComboBox.currentText()))
 
         Label_3 = QLabel("RTK - Balloon B")
-        combo_RTK_B = QComboBox(self._window)
-        combo_RTK_B.addItems(ports)
+        self._rtkBPortComboBox = QComboBox(self._window)
         RTK_B_btn = QPushButton("Connect", self._window)
-        RTK_B_btn.clicked.connect(lambda: self._controller.setRtkBPort(combo_RTK_B.currentText()))
+        RTK_B_btn.clicked.connect(
+            lambda: self._controller.setRtkBPort(self._rtkBPortComboBox.currentText()))
+        self._refreshPortList()
 
         Label_4 = QLabel('Target')
         combo_balloon = QComboBox(self._window)
@@ -69,17 +70,18 @@ class ControllerUi(QApplication):
             lambda: self._controller.setPointingTarget(combo_balloon.currentIndex()))
 
         rightBox = QVBoxLayout()
+        rightBox.addWidget(refresh_btn)
 
         rightBox.addWidget(Label_1)
-        rightBox.addWidget(combo_controller)
+        rightBox.addWidget(self._pointingSystemPortComboBox)
         rightBox.addWidget(controller_btn)
 
         rightBox.addWidget(Label_2)
-        rightBox.addWidget(combo_RTK_A)
+        rightBox.addWidget(self._rtkAPortComboBox)
         rightBox.addWidget(RTK_A_btn)
 
         rightBox.addWidget(Label_3)
-        rightBox.addWidget(combo_RTK_B)
+        rightBox.addWidget(self._rtkBPortComboBox)
         rightBox.addWidget(RTK_B_btn)
 
         rightBox.addWidget(Label_4)
@@ -103,6 +105,19 @@ class ControllerUi(QApplication):
             self._commandEdit.clear()
         except (ValueError, SerialException) as error:
             QErrorMessage(self._window).showMessage(f'Failed to send command:\n\n{error}')
+
+    def _refreshPortList(self):
+        """ Refresh the lists of ports shown in the UI. """
+        ports = [portinfo.device for portinfo in comports()]
+        for comboBox in [self._pointingSystemPortComboBox,
+                         self._rtkAPortComboBox, self._rtkBPortComboBox]:
+            currentValue = comboBox.currentText()
+            comboBox.clear()
+            comboBox.addItems(ports)
+            if currentValue:
+                index = ports.index(currentValue)
+                if index != -1:
+                    comboBox.setCurrentIndex(index)
 
 
 if __name__ == '__main__':
