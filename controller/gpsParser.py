@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from contextlib import nullcontext
 from dataclasses import dataclass
 
-from serial import Serial
+from serial import Serial, SerialException
 from serial.tools.list_ports import comports
 
 
@@ -55,7 +55,12 @@ class GPSParser:
         with nullcontext() if self._rawLogFilePath is None else \
                 open(self._rawLogFilePath, 'wb') as recordingFile:
             while runCondition is None or runCondition():
-                newData = self._connection.read(self._connection.inWaiting() or 1)
+                try:
+                    newData = self._connection.read(self._connection.inWaiting() or 1)
+                except SerialException as error:
+                    print(f'Reading from RTK serial port failed: {error}')
+                    self.close()
+                    continue
                 if recordingFile is not None:
                     recordingFile.write(newData)
                 buffer += newData
