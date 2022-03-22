@@ -200,7 +200,10 @@ class Controller:
 
     def sendCommand(self, commandText):
         arguments = commandText.split()
-        command = self._findCommand(arguments.pop(0))
+        try:
+            command = self._findCommand(arguments.pop(0))
+        except IndexError:
+            return
         try:
             commandData = command.serialize(*arguments)
         except TypeError as error:
