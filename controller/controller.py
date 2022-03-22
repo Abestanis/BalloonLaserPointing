@@ -105,8 +105,18 @@ class LaserPointingConnection(ConnectionThread):
 
 
 class GpsParserThread(ConnectionThread, GPSParser):
+    """ A thread to read from the RTK Gps. """
+
     def __init__(self, controller, heightOffset=0):
-        super().__init__(daemon=True)
+        """
+        Initialize a GpsParser thread, but don't connect yet.
+
+        :param controller: The laser pointing controller.
+        :param heightOffset: The height offset to subtract from the received location
+                             to get the actual pointing target.
+        """
+        ConnectionThread.__init__(self, daemon=True)
+        GPSParser.__init__(self, outputDir='logs', storeRawLog=True, storeLocationLog=True)
         self._controller = controller
         self._heightOffset = heightOffset
         self._lastLocation = None
@@ -115,14 +125,33 @@ class GpsParserThread(ConnectionThread, GPSParser):
         self.parse(self._runCondition)
 
     def open(self, port):
-        super().connect(port)
+        """
+        Open the connection to the RTK Gps system.
+
+        :param port: The port where the RTK is connected to.
+        """
+        GPSParser.open(self, port)
         super().open()
+
+    def close(self):
+        """ Close the connection with the RTK Gps system. """
+        GPSParser.close(self)
+        super().close()
 
     @property
     def lastLocation(self):
+        """
+        :return: The last location of this receiver.
+        """
         return self._lastLocation
 
     def _handleParsedLocation(self, location):
+        """
+        Handle a new received parsed location, forward it to the controller and remember it
+        as the last location. Also apply the height offset.
+
+        :param location: The location parsed from the RTK GPS device.
+        """
         location.altitude -= self._heightOffset
         self._lastLocation = location
         self._controller.onNewLocation(self, location)
