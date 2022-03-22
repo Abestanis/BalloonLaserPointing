@@ -48,27 +48,47 @@ class Command:
 
 
 class ConnectionThread(Thread):
+    """ A thread that manages a connection which can be opened and closed multiple times. """
+
     def __init__(self, *args, **kwargs):
+        """
+        Initialize a new connection thread.
+
+        :param args: Arguments for the thread constructor.
+        :param kwargs: Keyword arguments for the thread constructor.
+        """
         super().__init__(*args, **kwargs)
         self._openCondition = Condition()
         self._isOpen = False
         self._isStopped = False
 
     def open(self, *args):
+        """
+        Open the connection and start reading on the thread.
+
+        :param args: Arguments to the open call.
+        """
         self._isOpen = True
         with self._openCondition:
             self._openCondition.notify()
 
     def close(self):
+        """ Close the connection and put the thread into idle mode. """
         self._isOpen = False
 
     def stop(self):
+        """ Close the connection and stop the thread. """
         self._isStopped = True
         self.close()
         with self._openCondition:
             self._openCondition.notify()
 
     def _runCondition(self):
+        """
+        A run condition that should be checked by the run function of this thread from time to time.
+
+        :return: Whether the thread should continue to run.
+        """
         while not self._isStopped and not self._isOpen:
             with self._openCondition:
                 self._openCondition.wait()
@@ -76,7 +96,15 @@ class ConnectionThread(Thread):
 
 
 class LaserPointingConnection(ConnectionThread):
+    """ The serial connection to the laser pointing system. """
+
     def __init__(self, controller):
+        """
+        Initialize the connection to the laser pointing system.
+        This will not open the connection yet.
+
+        :param controller: The laser pointing controller.
+        """
         super().__init__(daemon=True)
         self._controller = controller
         self._connection = Serial(baudrate=9600, timeout=1)
@@ -84,15 +112,27 @@ class LaserPointingConnection(ConnectionThread):
         self._sendLock = Lock()
 
     def open(self, port):
+        """
+        Open the connection to the laser pointing system.
+
+        :param port: The port that the laser pointing system is connected on.
+        """
         self._connection.setPort(port)
         self._connection.open()
         super().open()
 
     def send(self, data):
+        """
+        Send some data to the laser pointing system.
+        This function is thread save and will block if another thread is currently sending data.
+
+        :param data: The data to send.
+        """
         with self._sendLock:
             self._connection.write(data)
 
     def run(self):
+        """ Read data from the laser pointing system and forward it to the controller. """
         while self._runCondition():
             try:
                 data = self._connection.read(self._connection.inWaiting() or 1)
@@ -159,6 +199,9 @@ class GpsParserThread(ConnectionThread, GPSParser):
 
 
 class Controller:
+    """ The main controller coordinating the GPS and laser pointing connection and UI. """
+
+    # A list of all commands known to the controller.
     COMMANDS = [
         # Send a PING, expect a PONG back.
         Command('PING'),
@@ -178,6 +221,7 @@ class Controller:
     ]
 
     def __init__(self):
+        """ Initialize a new controller. """
         super().__init__()
         self._connection = LaserPointingConnection(self)
         self._pointingTarget = 0
@@ -187,6 +231,7 @@ class Controller:
         self._gpsCommand = self._findCommand('GPS')
 
     def run(self):
+        """ Run the controller, this will show the UI. """
         threads = [self._connection, self._balloonAGpsParser, self._balloonBGpsParser]
         for thread in threads:
             thread.start()
@@ -199,6 +244,11 @@ class Controller:
         return result
 
     def sendCommand(self, commandText):
+        """
+        Send a command to the laser pointing system.
+
+        :param commandText: The textual representation of the command.
+        """
         arguments = commandText.split()
         try:
             command = self._findCommand(arguments.pop(0))
@@ -211,18 +261,38 @@ class Controller:
         self._connection.send(commandData)
 
     def setPointingSystemPort(self, port):
+        """
+        Set the port of the pointing system and connect to it.
+
+        :param port: The new port of the pointing system.
+        """
         print(f'Connecting to port {port}...')
         self._connection.open(port)
 
     def setRtkAPort(self, port):
+        """
+        Set the port of the RTK GPS receiver for balloon A and connect to it.
+
+        :param port: The new port of the RTK GPS receiver for balloon A.
+        """
         print(f'RTK A : connection to the port {port}...')
         self._balloonAGpsParser.open(port)
 
     def setRtkBPort(self, port):
+        """
+        Set the port of the RTK GPS receiver for balloon B and connect to it.
+
+        :param port: The new port of the RTK GPS receiver for balloon B.
+        """
         print(f'RTK B : connection to the port {port}...')
         self._balloonBGpsParser.open(port)
 
     def setPointingTarget(self, target):
+        """
+        Set the target that should be pointed to.
+
+        :param target: The index of the target balloon.
+        """
         print(f'Set the target to {target}')
         self._pointingTarget = target
         activeSource = [self._balloonAGpsParser, self._balloonBGpsParser][target]
@@ -230,6 +300,12 @@ class Controller:
             self.onNewLocation(activeSource, activeSource.lastLocation)
 
     def onNewLocation(self, source, location):
+        """
+        Called when a new location is available.
+
+        :param source: The connection that generated the location.
+        :param location: The new location.
+        """
         if self._pointingTarget == [self._balloonAGpsParser, self._balloonBGpsParser].index(source):
             command = self._gpsCommand.serialize(
                 location.latitude, location.longitude, location.altitude)
@@ -239,11 +315,23 @@ class Controller:
                 print(f'Failed to send location: {error}')
 
     def onNewLog(self, data):
+        """
+        Called when there is new log available for the laser pointing system.
+
+        :param data: The new log data as bytes.
+        """
         text = data.decode('utf-8', errors='replace')
         print(text, end='', flush=True)
         self._ui.addLog(text)
 
     def _findCommand(self, name):
+        """
+        Find a command by its name
+
+        :raises ValueError: If no command exists with that name.
+        :param name: The name of the command.
+        :return: The command with that name.
+        """
         try:
             return next(command for command in self.COMMANDS if command.name == name)
         except StopIteration:
@@ -251,6 +339,11 @@ class Controller:
 
 
 def main():
+    """
+    Run the controller program.
+
+    :return: The exit code of the controller program.
+    """
     controller = Controller()
     return controller.run()
 
