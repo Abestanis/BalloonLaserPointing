@@ -1,10 +1,11 @@
 import sys
-from PyQt5.QtCore import pyqtSignal
 
 from serial import SerialException
 from serial.tools.list_ports import comports
-from PyQt5.QtWidgets import QWidget, QTextEdit, QApplication, QLineEdit, QPushButton, QHBoxLayout, \
-    QVBoxLayout, QLabel, QComboBox, QErrorMessage
+from PyQt5.QtGui import QTextCursor
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QApplication, QLineEdit, QPushButton, \
+    QHBoxLayout, QVBoxLayout, QLabel, QComboBox, QErrorMessage
 
 
 class ControllerUi(QApplication):
@@ -15,9 +16,9 @@ class ControllerUi(QApplication):
         self._controller = controller
         self.setStyle('fusio')
         self._window = QWidget()
-        self.mbox = QTextEdit()
+        self.mbox = QPlainTextEdit()
         self._setUI()
-        self._newLog.connect(self.mbox.insertPlainText)
+        self._newLog.connect(self._appendLog)
 
     def addLog(self, text):
         self._newLog.emit(text)
@@ -131,12 +132,21 @@ class ControllerUi(QApplication):
 
         :param operation: The operation to execute.
         :param args: Arguments for the operation.
-        :param kwargs: Keywards arguments for the operation.
+        :param kwargs: Keyword arguments for the operation.
         """
         try:
             operation(*args, **kwargs)
         except SerialException as error:
             QErrorMessage(self._window).showMessage(f'Operation failed:\n\n{error}')
+
+    def _appendLog(self, text):
+        """
+        Append text to the log window.
+
+        :param text: The text to add.
+        """
+        self.mbox.moveCursor(QTextCursor.End)
+        self.mbox.insertPlainText(text)
 
 
 if __name__ == '__main__':
