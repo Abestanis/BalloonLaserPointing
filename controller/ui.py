@@ -50,20 +50,20 @@ class ControllerUi(QApplication):
         Label_1 = QLabel("Controller")
         self._pointingSystemPortComboBox = QComboBox(self._window)
         controller_btn = QPushButton("Connect", self._window)
-        controller_btn.clicked.connect(lambda: self._controller.setPointingSystemPort(
-            self._pointingSystemPortComboBox.currentText()))
+        controller_btn.clicked.connect(lambda: self._catchSerialError(
+            self._controller.setPointingSystemPort, self._pointingSystemPortComboBox.currentText()))
 
         Label_2 = QLabel("RTK - Balloon A")
         self._rtkAPortComboBox = QComboBox(self._window)
         RTK_A_btn = QPushButton("Connect", self._window)
-        RTK_A_btn.clicked.connect(
-            lambda: self._controller.setRtkAPort(self._rtkAPortComboBox.currentText()))
+        RTK_A_btn.clicked.connect(lambda: self._catchSerialError(
+            self._controller.setRtkAPort, self._rtkAPortComboBox.currentText()))
 
         Label_3 = QLabel("RTK - Balloon B")
         self._rtkBPortComboBox = QComboBox(self._window)
         RTK_B_btn = QPushButton("Connect", self._window)
-        RTK_B_btn.clicked.connect(
-            lambda: self._controller.setRtkBPort(self._rtkBPortComboBox.currentText()))
+        RTK_B_btn.clicked.connect(lambda: self._catchSerialError(
+            self._controller.setRtkBPort, self._rtkBPortComboBox.currentText()))
         self._refreshPortList()
 
         Label_4 = QLabel('Target')
@@ -71,8 +71,8 @@ class ControllerUi(QApplication):
         combo_balloon.addItem("Balloon A")
         combo_balloon.addItem("Balloon B")
         balloon_btn = QPushButton("Select Target", self._window)
-        balloon_btn.clicked.connect(
-            lambda: self._controller.setPointingTarget(combo_balloon.currentIndex()))
+        balloon_btn.clicked.connect(lambda: self._catchSerialError(
+            self._controller.setPointingTarget, combo_balloon.currentIndex()))
 
         rightBox = QVBoxLayout()
         rightBox.addWidget(refresh_btn)
@@ -124,6 +124,19 @@ class ControllerUi(QApplication):
                 index = ports.index(currentValue)
                 if index != -1:
                     comboBox.setCurrentIndex(index)
+
+    def _catchSerialError(self, operation, *args, **kwargs):
+        """
+        Execute an operation and catch any serial exceptions.
+
+        :param operation: The operation to execute.
+        :param args: Arguments for the operation.
+        :param kwargs: Keywards arguments for the operation.
+        """
+        try:
+            operation(*args, **kwargs)
+        except SerialException as error:
+            QErrorMessage(self._window).showMessage(f'Operation failed:\n\n{error}')
 
 
 if __name__ == '__main__':
