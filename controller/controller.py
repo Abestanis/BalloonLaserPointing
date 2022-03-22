@@ -94,7 +94,12 @@ class LaserPointingConnection(ConnectionThread):
 
     def run(self):
         while self._runCondition():
-            data = self._connection.read(self._connection.inWaiting() or 1)
+            try:
+                data = self._connection.read(self._connection.inWaiting() or 1)
+            except SerialException as error:
+                print(f'Reading from pointing system serial port failed: {error}')
+                self.close()
+                continue
             self._controller.onNewLog(data)
         self._connection.close()
 
