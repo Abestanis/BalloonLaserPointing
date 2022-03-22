@@ -171,9 +171,10 @@ class Controller:
         Command('SET_LOCATION', lambda latitude, longitude, altitude, orientation: struct.pack(
             '<dddd', float(latitude), float(longitude), float(altitude), float(orientation))),
         # Manually set the motor position to a specific angle.
-        Command('SET_MOTOR_POSITION', lambda motor: struct.pack('<Bd', int(motor))),
+        Command('SET_MOTOR_POSITION',
+                lambda motor, angle: struct.pack('<Bd', int(motor), float(angle))),
         # Set the calibration angle of a motor to the current angle.
-        Command('SET_CALIBRATION_POINT'),
+        Command('SET_CALIBRATION_POINT', lambda motor: struct.pack('<B', int(motor))),
     ]
 
     def __init__(self):
