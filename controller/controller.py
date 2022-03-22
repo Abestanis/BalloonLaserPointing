@@ -181,8 +181,8 @@ class Controller:
         super().__init__()
         self._connection = LaserPointingConnection(self)
         self._pointingTarget = 0
-        self._balloonAGpsParser = GpsParserThread(self)
-        self._balloonBGpsParser = GpsParserThread(self)
+        self._balloonAGpsParser = GpsParserThread(self, heightOffset=0.26)
+        self._balloonBGpsParser = GpsParserThread(self, heightOffset=0.26)
         self._ui = ControllerUi(self)
         self._gpsCommand = self._findCommand('GPS')
 
