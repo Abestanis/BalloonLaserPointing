@@ -1,7 +1,10 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import os
 import sys
+
+from time import strftime
 from argparse import ArgumentParser
 from contextlib import nullcontext
 from dataclasses import dataclass
@@ -22,28 +25,54 @@ class Location:
 class GPSParser:
     """ Allow parsing of GPS messages from an RTK module. """
 
-    def __init__(self, rawLogFilePath=None, locationLogFile=None):
+    def __init__(self, outputDir=None, storeRawLog=False, storeLocationLog=False):
         """
         Initialize the parser.
 
-        :param rawLogFilePath: An optional path to a log file where
-                               raw communication will be recorded to.
-        :param locationLogFile: An optional open file to write received locations to.
+        :param outputDir: The directory where logs are stored. Defaults to the current directory.
+        :param storeRawLog: Whether to store the raw communication. The storage location will be
+                            in a 'raw' subdirectory of the outputDir.
+        :param storeLocationLog: Whether to store the received locations. The storage location
+                                 will be in a 'location' subdirectory of the outputDir.
         """
         super().__init__()
-        self._rawLogFilePath = rawLogFilePath
-        self._locationLogFile = locationLogFile
+        if outputDir is not None:
+            os.makedirs(outputDir, exist_ok=True)
+        else:
+            outputDir = '.'
+        if storeRawLog:
+            self._rawLogDir = os.path.join(outputDir, 'raw')
+            os.makedirs(self._rawLogDir, exist_ok=True)
+        else:
+            self._rawLogDir = None
+        self._locationLogFile = None
+        self._outputDir = outputDir
+        self._storeLocationLog = storeLocationLog
         self._connection = Serial(baudrate=115200, timeout=1)
         self._connection.set_buffer_size(rx_size=640000)
 
-    def connect(self, port):
+    def open(self, port):
         """
         Connect to the RTK serial port.
 
         :param port: The serial port.
         """
+        if self._storeLocationLog:
+            locationLogDir = os.path.join(self._outputDir, 'location')
+            os.makedirs(locationLogDir, exist_ok=True)
+            self._locationLogFile = open(self._getLogPath(locationLogDir, '.csv'), 'a')
+        else:
+            self._locationLogFile = None
         self._connection.setPort(port)
         self._connection.open()
+
+    def close(self):
+        """ Disconnect from the serial port. """
+        self._connection.close()
+        locationLogFile = self._locationLogFile
+        if locationLogFile:
+            self._locationLogFile = None
+            locationLogFile.close()
 
     def parse(self, runCondition=None):
         """
@@ -52,8 +81,8 @@ class GPSParser:
         :param runCondition: A function that can return False to stop the parser loop.
         """
         buffer = b''
-        with nullcontext() if self._rawLogFilePath is None else \
-                open(self._rawLogFilePath, 'wb') as recordingFile:
+        with nullcontext() if self._rawLogDir is None else \
+                open(self._getLogPath(self._rawLogDir, '.bin'), 'wb') as recordingFile:
             while runCondition is None or runCondition():
                 try:
                     newData = self._connection.read(self._connection.inWaiting() or 1)
@@ -124,6 +153,17 @@ class GPSParser:
             self._locationLogFile.write(
                 f'{location.time},{location.latitude},{location.longitude},{location.altitude}\n')
 
+    @staticmethod
+    def _getLogPath(directory, ending):
+        """
+        Create a log file path with the given ending.
+
+        :param directory: The directory to create the log file path in.
+        :param ending: The file extension.
+        :return: A path to a log file.
+        """
+        return os.path.join(directory, strftime("%Y%m%d-%H%M%S") + ending)
+
 
 def main():
     """
@@ -134,9 +174,10 @@ def main():
     parser = ArgumentParser(description='RTK GPS parser')
     parser.add_argument('-p', '--port', default=None,
                         help='The serial port that the RTK GPS receiver is connected to')
-    parser.add_argument('-r', '--raw', help='A path to a log file to save the raw received data to')
-    parser.add_argument('-l', '--locations',
-                        help='A path to a log file to save the received locations to')
+    parser.add_argument('-r', '--raw', action='store_true', help='Enable storing raw received data')
+    parser.add_argument('-l', '--locations', action='store_true',
+                        help='Enable storing the received locations')
+    parser.add_argument('-o', '--outputs', help='A path to a directory to save recordings to')
     arguments = parser.parse_args()
     port = arguments.port
     if port is None:
@@ -159,11 +200,11 @@ def main():
             print(location)
             super()._handleParsedLocation(location)
 
-    with nullcontext() if arguments.locations is None else \
-            open(arguments.locations, 'w') as locationsFile:
-        parser = PrintingGPSParser(rawLogFilePath=arguments.raw, locationLogFile=locationsFile)
-        parser.connect(port)
-        parser.parse()
+    parser = PrintingGPSParser(
+        arguments.output, storeRawLog=arguments.raw, storeLocationLog=arguments.locations)
+    parser.open(port)
+    parser.parse()
+    parser.close()
 
 
 if __name__ == '__main__':
