@@ -1,9 +1,11 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
+import os
 
 import sys
 import struct
 
+from time import strftime
 from threading import Thread, Condition, Lock
 
 from serial import Serial, SerialException
@@ -98,7 +100,7 @@ class ConnectionThread(Thread):
 class LaserPointingConnection(ConnectionThread):
     """ The serial connection to the laser pointing system. """
 
-    def __init__(self, controller):
+    def __init__(self, controller, logDirectory):
         """
         Initialize the connection to the laser pointing system.
         This will not open the connection yet.
@@ -110,6 +112,10 @@ class LaserPointingConnection(ConnectionThread):
         self._connection = Serial(baudrate=9600, timeout=1)
         self._connection.set_buffer_size(rx_size=640000)
         self._sendLock = Lock()
+        self._logFile = None
+        self._logDirectory = logDirectory
+        if self._logDirectory is not None:
+            os.makedirs(self._logDirectory, exist_ok=True)
 
     def open(self, port):
         """
@@ -119,7 +125,16 @@ class LaserPointingConnection(ConnectionThread):
         """
         self._connection.setPort(port)
         self._connection.open()
+        if self._logDirectory:
+            self._logFile = open(
+                os.path.join(self._logDirectory, strftime("%Y%m%d-%H%M%S") + '.bin'), 'wb')
         super().open()
+
+    def close(self):
+        super().close()
+        if self._logFile is not None:
+            self._logFile.close()
+            self._logFile = None
 
     def send(self, data):
         """
@@ -140,6 +155,8 @@ class LaserPointingConnection(ConnectionThread):
                 print(f'Reading from pointing system serial port failed: {error}')
                 self.close()
                 continue
+            if self._logFile is None:
+                self._logFile.write(data)
             self._controller.onNewLog(data)
         self._connection.close()
 
@@ -223,7 +240,7 @@ class Controller:
     def __init__(self):
         """ Initialize a new controller. """
         super().__init__()
-        self._connection = LaserPointingConnection(self)
+        self._connection = LaserPointingConnection(self, os.path.join('logs', 'laser'))
         self._pointingTarget = 0
         self._balloonAGpsParser = GpsParserThread(self, heightOffset=0.26)
         self._balloonBGpsParser = GpsParserThread(self, heightOffset=0.26)
