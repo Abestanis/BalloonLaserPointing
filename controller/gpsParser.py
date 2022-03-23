@@ -177,7 +177,7 @@ def main():
     parser.add_argument('-r', '--raw', action='store_true', help='Enable storing raw received data')
     parser.add_argument('-l', '--locations', action='store_true',
                         help='Enable storing the received locations')
-    parser.add_argument('-o', '--outputs', help='A path to a directory to save recordings to')
+    parser.add_argument('-o', '--output', help='A path to a directory to save recordings to')
     arguments = parser.parse_args()
     port = arguments.port
     if port is None:
