@@ -155,7 +155,7 @@ class LaserPointingConnection(ConnectionThread):
                 print(f'Reading from pointing system serial port failed: {error}')
                 self.close()
                 continue
-            if self._logFile is None:
+            if self._logFile is not None:
                 self._logFile.write(data)
             self._controller.onNewLog(data)
         self._connection.close()
