@@ -122,9 +122,11 @@ class ControllerUi(QApplication):
             comboBox.clear()
             comboBox.addItems(ports)
             if currentValue:
-                index = ports.index(currentValue)
-                if index != -1:
+                try:
+                    index = ports.index(currentValue)
                     comboBox.setCurrentIndex(index)
+                except ValueError:
+                    pass
 
     def _catchSerialError(self, operation, *args, **kwargs):
         """
