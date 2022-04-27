@@ -43,7 +43,8 @@ void Stepper::setTargetAngle(deg_t angle) {
 void Stepper::updateMotors() {
     uint32_t now = micros();
     for (auto& motor: stepperMotors) {
-        if (now - motor->lastStepTime > motor->stepDelay - MAX_TIMER_JITTER_MICRO_SEC) {
+        if (now - motor->lastStepTime > motor->stepDelay - MAX_TIMER_JITTER_MICRO_SEC
+            || now < motor->lastStepTime) {
             motor->updateStep();
             motor->lastStepTime = now;
         }
