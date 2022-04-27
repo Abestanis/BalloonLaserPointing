@@ -104,6 +104,7 @@ class GPSParser:
 
         :param line: The line which was received.
         """
+        # noinspection SpellCheckingInspection
         if not line.startswith(b'$GNGGA,'):
             return
         parts = line.split(b',')

@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
 
+import os
 import sys
 import struct
 
@@ -88,6 +88,7 @@ class ConnectionThread(Thread):
     def _runCondition(self):
         """
         A run condition that should be checked by the run function of this thread from time to time.
+        If it returns False, the tread should exit.
 
         :return: Whether the thread should continue to run.
         """
@@ -339,7 +340,7 @@ class Controller:
 
     def _findCommand(self, name):
         """
-        Find a command by its name
+        Find a command by its name.
 
         :raises ValueError: If no command exists with that name.
         :param name: The name of the command.

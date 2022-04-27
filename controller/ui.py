@@ -9,103 +9,117 @@ from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QApplication, QLineEdit, QP
 
 
 class ControllerUi(QApplication):
-    _newLog = pyqtSignal(str)
+    """ A user interface for the controller. """
+    _newLog = pyqtSignal(str)  # A signal that will get emitted when new logging data arrives.
 
     def __init__(self, controller):
+        """
+        Initialize the controller user interface and show it.
+        
+        :param controller: The controller who communicates with the RTKs and the Arduino. 
+        """
         super().__init__(sys.argv)
         self._controller = controller
         self.setStyle('fusio')
         self._window = QWidget()
-        self.mbox = QPlainTextEdit()
+        self._logTextWidget = QPlainTextEdit()
         self._setUI()
         self._newLog.connect(self._appendLog)
 
     def addLog(self, text):
+        """
+        Add some new log to be displayed in the UI.
+        This function can be called from any thread.
+
+        :param text: The text of the log that should be added.
+        """
         self._newLog.emit(text)
 
     def _setUI(self):
-        self.mbox.setReadOnly(True)
+        """ Initialize and show the user interface. """
+        self._logTextWidget.setReadOnly(True)
         self._commandComboBox = QComboBox()
         for command in self._controller.COMMANDS:
             self._commandComboBox.addItem(command.name, command)
 
         self._commandEdit = QLineEdit()
         self._commandEdit.returnPressed.connect(self._onSendCommand)
-        line_btn = QPushButton("Send", self._window)
-        line_btn.setShortcut("Enter")
-        line_btn.clicked.connect(self._onSendCommand)
+        sendButton = QPushButton('Send', self._window)
+        sendButton.setShortcut('Enter')
+        sendButton.clicked.connect(self._onSendCommand)
 
         prompt = QHBoxLayout()
 
         prompt.addWidget(self._commandComboBox)
         prompt.addWidget(self._commandEdit)
-        prompt.addWidget(line_btn)
+        prompt.addWidget(sendButton)
 
         leftBox = QVBoxLayout()
-        leftBox.addWidget(self.mbox)
+        leftBox.addWidget(self._logTextWidget)
         leftBox.addLayout(prompt)
 
-        refresh_btn = QPushButton('Refresh Ports', self._window)
-        refresh_btn.clicked.connect(self._refreshPortList)
+        refreshButton = QPushButton('Refresh Ports', self._window)
+        refreshButton.clicked.connect(self._refreshPortList)
 
-        Label_1 = QLabel("Controller")
+        controllerLabel = QLabel('Controller')
         self._pointingSystemPortComboBox = QComboBox(self._window)
-        controller_btn = QPushButton("Connect", self._window)
-        controller_btn.clicked.connect(lambda: self._catchSerialError(
+        controllerButton = QPushButton('Connect', self._window)
+        controllerButton.clicked.connect(lambda: self._catchSerialError(
             self._controller.setPointingSystemPort, self._pointingSystemPortComboBox.currentText()))
 
-        Label_2 = QLabel("RTK - Balloon A")
+        rtkALabel = QLabel('RTK - Balloon A')
         self._rtkAPortComboBox = QComboBox(self._window)
-        RTK_A_btn = QPushButton("Connect", self._window)
-        RTK_A_btn.clicked.connect(lambda: self._catchSerialError(
+        rtkAButton = QPushButton("Connect", self._window)
+        rtkAButton.clicked.connect(lambda: self._catchSerialError(
             self._controller.setRtkAPort, self._rtkAPortComboBox.currentText()))
 
-        Label_3 = QLabel("RTK - Balloon B")
+        rtkBLabel = QLabel('RTK - Balloon B')
         self._rtkBPortComboBox = QComboBox(self._window)
-        RTK_B_btn = QPushButton("Connect", self._window)
-        RTK_B_btn.clicked.connect(lambda: self._catchSerialError(
+        rtkBButton = QPushButton('Connect', self._window)
+        rtkBButton.clicked.connect(lambda: self._catchSerialError(
             self._controller.setRtkBPort, self._rtkBPortComboBox.currentText()))
         self._refreshPortList()
 
-        Label_4 = QLabel('Target')
-        combo_balloon = QComboBox(self._window)
-        combo_balloon.addItem("Balloon A")
-        combo_balloon.addItem("Balloon B")
-        balloon_btn = QPushButton("Select Target", self._window)
-        balloon_btn.clicked.connect(lambda: self._catchSerialError(
-            self._controller.setPointingTarget, combo_balloon.currentIndex()))
+        targetLabel = QLabel('Target')
+        targetComboBox = QComboBox(self._window)
+        targetComboBox.addItem('Balloon A')
+        targetComboBox.addItem('Balloon B')
+        targetButton = QPushButton('Select Target', self._window)
+        targetButton.clicked.connect(lambda: self._catchSerialError(
+            self._controller.setPointingTarget, targetComboBox.currentIndex()))
 
         rightBox = QVBoxLayout()
-        rightBox.addWidget(refresh_btn)
+        rightBox.addWidget(refreshButton)
 
-        rightBox.addWidget(Label_1)
+        rightBox.addWidget(controllerLabel)
         rightBox.addWidget(self._pointingSystemPortComboBox)
-        rightBox.addWidget(controller_btn)
+        rightBox.addWidget(controllerButton)
 
-        rightBox.addWidget(Label_2)
+        rightBox.addWidget(rtkALabel)
         rightBox.addWidget(self._rtkAPortComboBox)
-        rightBox.addWidget(RTK_A_btn)
+        rightBox.addWidget(rtkAButton)
 
-        rightBox.addWidget(Label_3)
+        rightBox.addWidget(rtkBLabel)
         rightBox.addWidget(self._rtkBPortComboBox)
-        rightBox.addWidget(RTK_B_btn)
+        rightBox.addWidget(rtkBButton)
 
-        rightBox.addWidget(Label_4)
-        rightBox.addWidget(combo_balloon)
-        rightBox.addWidget(balloon_btn)
+        rightBox.addWidget(targetLabel)
+        rightBox.addWidget(targetComboBox)
+        rightBox.addWidget(targetButton)
 
-        w = QHBoxLayout()
+        mainLayout = QHBoxLayout()
 
-        w.addLayout(leftBox)
-        w.addLayout(rightBox)
+        mainLayout.addLayout(leftBox)
+        mainLayout.addLayout(rightBox)
 
-        self._window.setLayout(w)
+        self._window.setLayout(mainLayout)
 
         self._window.setGeometry(300, 300, 1000, 500)
         self._window.setWindowTitle('Laser Pointing Controller')
         self._window.show()
 
     def _onSendCommand(self):
+        """ Called when clicking on the 'Send' button. Send the currently entered command. """
         try:
             self._controller.sendCommand(
                 self._commandComboBox.currentData(), self._commandEdit.text().split())
@@ -130,7 +144,7 @@ class ControllerUi(QApplication):
 
     def _catchSerialError(self, operation, *args, **kwargs):
         """
-        Execute an operation and catch any serial exceptions.
+        Execute an operation, catch any serial exceptions and show an error dialog.
 
         :param operation: The operation to execute.
         :param args: Arguments for the operation.
@@ -147,31 +161,33 @@ class ControllerUi(QApplication):
 
         :param text: The text to add.
         """
-        self.mbox.moveCursor(QTextCursor.End)
-        self.mbox.insertPlainText(text)
+        self._logTextWidget.moveCursor(QTextCursor.End)
+        self._logTextWidget.insertPlainText(text)
 
 
 if __name__ == '__main__':
     class MockController:
+        """ A controller that can be used for testing the UI. """
+
         @staticmethod
         def sendCommand(command, arguments):
             print(f'Sending {command.name} (arguments: {arguments})')
 
         @staticmethod
         def setPointingSystemPort(port):
-            print("Controller : connection to the port " + port + "...")
+            print(f'Controller : connection to the port {port}...')
 
         @staticmethod
         def setRtkAPort(port):
-            print("RTK A : connection to the port " + port + "...")
+            print(f'RTK A : connection to the port {port}...')
 
         @staticmethod
         def setRtkBPort(port):
-            print("RTK B : connection to the port " + port + "...")
+            print(f'RTK B : connection to the port {port}...')
 
         @staticmethod
         def setPointingTarget(target):
-            print("Set the target to " + target)
+            print('Set the target to ' + target)
 
 
     sys.exit(ControllerUi(MockController()).exec())
