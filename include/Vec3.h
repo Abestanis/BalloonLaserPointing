@@ -1,3 +1,7 @@
+/**
+ * Three dimensional vector.
+ */
+
 #pragma once
 
 /**

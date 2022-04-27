@@ -4,12 +4,7 @@
 
 #pragma once
 
-/**
- * A 3 dimensional double vector.
- */
-typedef struct {
-    double x, y, z;
-} Vec3D;
+#include "types.h"
 
 
 /**

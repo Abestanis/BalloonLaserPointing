@@ -80,6 +80,7 @@ void Program::handleSetLocation(deg_t latitude, deg_t longitude, meter_t height,
 void Program::updateTargetMotorAngles() {
     LocalDirection targetDirection = LocationTransformer::directionFrom(
             this->laserPosition, this->targetPosition);
+    // TODO: Investigate why it's -targetDirection.azimuth when testing with Google Maps.
     this->targetMotorAngles.azimuth = targetDirection.azimuth - laserOrientation;
     this->targetMotorAngles.elevation = targetDirection.elevation / 2.0 - deg_t(90);
     Serial.print("Target: Azimuth=");

@@ -1,3 +1,7 @@
+/**
+ * A type to wrap another type.
+ */
+
 #pragma once
 
 /**

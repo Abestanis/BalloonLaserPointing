@@ -1,3 +1,6 @@
+/**
+ * The main program.
+ */
 #pragma once
 
 #include "SerialConnection.h"
@@ -29,7 +32,7 @@
 
 
 /**
- * A handler for incoming telecommands.
+ * The main program running on the Arduino.
  */
 class Program : private SerialConnection::CommandHandler {
 public:
@@ -59,25 +62,14 @@ private:
     void handleSetCalibrationPoint(SerialConnection::Motor motor) override;
 
     /**
-     * Normalize the angle to be between 0 and 360 degrees.
-     * @param angle The angle to normalize in degrees.
-     * @return The normalized angle.
-     */
-    static deg_t normalizeAngle(deg_t angle) {
-        angle = deg_t(fmod(angle.value, 360));
-        if (angle < 0) {
-            angle += 360;
-        }
-        return angle;
-    }
-
-    /**
      * Update the motor angles for the current target and laser locations.
      */
     void updateTargetMotorAngles();
 
 #if USE_IMU
-    /** The time in milliseconds since boot when the gyroscope was last read. */
+    /**
+     * The time in milliseconds since boot when the gyroscope was last read.
+     */
     unsigned long lastMeasurementMillis = 0;
 #endif /* USE_IMU */
 
@@ -92,8 +84,8 @@ private:
     GpsPosition targetPosition {rad_t(0), rad_t(0), meter_t(1)};
 
     /**
-     * The orientation of the laser pointing structure in relation to the geographical nord.
-     * 0° -> pointing directly nord in the 0 base motor position.
+     * The orientation of the laser pointing structure in relation to the geographical North.
+     * 0° -> Pointing directly North in the 0 base motor position.
      */
     deg_t laserOrientation = deg_t(0);
 
@@ -102,12 +94,16 @@ private:
      */
     LocalDirection targetMotorAngles = {deg_t(0), deg_t(0)};
 
-    /** The motor that is used to turn the base plate of the laser. */
+    /**
+     * The motor that is used to turn the base plate of the laser, controlling the azimuth.
+     */
     Stepper baseMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION * BASE_MOTOR_GEAR_MULTIPLIER,
             MOTOR_UPDATE_PERIOD_MICRO_S, Pins::baseMotor1, Pins::baseMotor2, Pins::baseMotor3,
             Pins::baseMotor4, Pins::baseMotorCalibration);
 
-    /** The motor that is used to turn the final mirror, controlling the elevation. */
+    /**
+     * The motor that is used to turn the final mirror, controlling the elevation.
+     */
     Stepper elevationMotor = Stepper(MOTOR_STEPS_PER_REVOLUTION, MOTOR_UPDATE_PERIOD_MICRO_S,
             Pins::elevationMotor1, Pins::elevationMotor2, Pins::elevationMotor3,
             Pins::elevationMotor4, Pins::elevationMotorCalibration);

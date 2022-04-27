@@ -1,5 +1,5 @@
 /**
- * Various data types.
+ * Various unit types which allow the compiler to help detect invalid mixes of units.
  */
 
 #pragma once

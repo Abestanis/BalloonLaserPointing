@@ -1,3 +1,7 @@
+/**
+ * Serial port communication.
+ */
+
 #pragma once
 
 #include <cstdint>
@@ -55,7 +59,7 @@ public:
     /**
      * An id for all installed motors.
      */
-    enum Motor: uint8_t {
+    enum Motor : uint8_t {
         /**
          * The motor that controls the azimuth angle (the base motor).
          */
@@ -123,7 +127,7 @@ public:
      *
      * @param handler A handler for incoming telecommands.
      */
-    explicit SerialConnection(CommandHandler &handler);
+    explicit SerialConnection(CommandHandler& handler);
 
     /**
      * Check for and handle incoming messages.
@@ -140,6 +144,6 @@ private:
     /**
      * A handler for incoming telecommands.
      */
-    CommandHandler &handler;
+    CommandHandler& handler;
 };
 

@@ -7,7 +7,7 @@
 #include <cstdint>
 
 /**
- * A physical pin used by the program.
+ * A physical pin on the Arduino.
  */
 class Pin {
 public:
