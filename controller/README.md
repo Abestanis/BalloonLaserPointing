@@ -24,4 +24,4 @@ One of the two receivers can be selected as a target in the UI.
 The locations received from this GPS receiver will then be forwarded to the Arduino.
 
 ### User Interface
-![User interface screenshot](images/User%20Interface.png)
+![User interface screenshot](../images/User Interface.png)
