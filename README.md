@@ -1,8 +1,19 @@
 # Balloon Laser Pointing
 
-This project aims to develop a controller for a two motor platform that will allow to point
+This project is the first iteration of a laser pointing system developed as part of the
+stratospheric balloon project of the M2 TSI masters at Paul Sabatier 3 University, Toulouse. 
+It consists of software and structure for a two motor platform that allows to point
 a laser at another balloon. The laser could then be used for communication, which is not
 part of this project.
+
+
+## Launch
+
+The project was tested during the launch of a stratospheric balloon on the 23rd March 2022.
+The system successfully demonstrated its pointing capabilities, although with an offset due
+to calibration inaccuracies. 
+
+![Pointing during the launch aof a stratospheric balloon](images/Launch%20Pointing.png)
 
 
 ## Building
