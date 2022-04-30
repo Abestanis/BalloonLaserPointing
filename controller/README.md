@@ -6,6 +6,22 @@ to the Arduino Due via a serial connection.
 The software allows sending telecommands and to forward received GPS locations
 to the Arduino.
 
+### Dependencies
+
+Install the dependencies with
+[pip](https://packaging.python.org/en/latest/tutorials/installing-packages/#use-pip-for-installing):
+
+```shell
+pip install -r requirements.txt
+```
+
+### Running
+
+To run the controller, start the [controller.py](controller.py) script with Python:
+
+```shell
+controller.py
+```
 
 ### Telecommands
 
