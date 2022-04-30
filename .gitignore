@@ -2,3 +2,8 @@
 CMakeListsPrivate.txt
 cmake-build-*/ 
 controller/logs
+
+.idea/workspace.xml
+.idea/usage.statistics.xml
+.idea/shelf
+*.iml
