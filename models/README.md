@@ -11,7 +11,7 @@ The [full model](Full Model.stl) contains all models assembled together.
 
 | Model                                                                                | Real                                                                |
 |--------------------------------------------------------------------------------------|---------------------------------------------------------------------|
-| ![The 3D Model of the fully assembled structure](../images/Structure Full Model.png) | ![The fully assembled structure](../images/Complete Structure.jpeg) |
+| ![The 3D Model of the fully assembled structure](../images/Structure Full Model.jpg) | ![The fully assembled structure](../images/Complete Structure.jpeg) |
 
 ### Motor
 
